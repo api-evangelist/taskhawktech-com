@@ -1,0 +1,112 @@
+generated: '2026-09-19'
+method: derived
+source: Derived by aligning the LIVE MCP tools/list (mcp/taskhawktech-com-mcp-tools-list.json, fetched anonymously
+  2026-09-19) with the provider-hosted OpenAPI 3.1.0 (openapi/taskhawktech-com-openapi.yml, 23 operations). Both
+  schemas are public, so every binding was checked field-by-field, not by name alone.
+purpose: 'Make each MCP tool a first-class discovery unit bound to its backing REST operationId so the tool inherits
+  the operation''s real requestBody schema. The two surfaces are projections of one gateway: five tools wrap five
+  governance POSTs one-to-one; four tools (health, status, check-peer, verify-token) reach routes that are live
+  on the host but missing from the OpenAPI; 18 REST operations (media authority, shield, signup, MPP sessions, payment
+  discovery) have no MCP tool.'
+surfaces:
+  rest_openapi: 'openapi/taskhawktech-com-openapi.yml  # 23 operations, 37 schemas; verbatim source openapi/_original/taskhawktech-com-openapi.json'
+  graphql: null
+  mcp: 'https://governance.taskhawktech.com/mcp/  # tools/list NOT gated; inputSchema for all 9 tools captured verbatim'
+  a2a_card: 'https://governance.taskhawktech.com/.well-known/agent-card.json  # 11 skills mirror the REST operations,
+    not the MCP tools'
+crosswalk:
+- tool: verify
+  category: governance
+  rest:
+  - verify-action
+  binding: rest
+  confidence: high
+  note: MCP required inputs ['action_type', 'action_payload', 'agent_id'] are a subset of the verify-action requestBody
+    schema; the tool wraps the same POST.
+- tool: attest
+  category: governance
+  rest:
+  - attest-action
+  binding: rest
+  confidence: high
+  note: MCP required inputs ['agent_id', 'action_description', 'action_payload'] are a subset of the attest-action
+    requestBody schema; the tool wraps the same POST.
+- tool: bind
+  category: governance
+  rest:
+  - bind-intent
+  binding: rest
+  confidence: high
+  note: MCP required inputs ['agent_id', 'intent_type', 'intent_description', 'command_payload'] are a subset of
+    the bind-intent requestBody schema; the tool wraps the same POST.
+- tool: verify-outcome
+  category: governance
+  rest:
+  - verify-outcome
+  binding: rest
+  confidence: high
+  note: MCP required inputs ['agent_id', 'intent_id', 'binding_id', 'actual_state'] are a subset of the verify-outcome
+    requestBody schema; the tool wraps the same POST.
+- tool: bundle
+  category: governance
+  rest:
+  - generate-bundle
+  binding: rest
+  confidence: high
+  note: MCP required inputs ['agent_id'] are a subset of the generate-bundle requestBody schema; the tool wraps
+    the same POST.
+mcp_only:
+- tool: health
+  reason: GET /health and GET /governance/health answer 200 live but neither path is in the OpenAPI.
+- tool: status
+  reason: Per-key usage/quota lookup; no public REST operation in the OpenAPI (needs the caller's X-API-Key context).
+- tool: check-peer
+  reason: Peer trust score; the agent card names GET /governance/reputation/{agent_id} and GET /passport/{agent_id}
+    (both live, JSON 404 for unknown ids) but neither is in the OpenAPI.
+- tool: verify-token
+  reason: POST /governance/verify-token exists live (GET → 405) and is named by the OpenAPI VerifyResponse.release_token
+    description and the agent card, but has no operation in the spec.
+rest_only:
+- capability: media authority (attest/verify/lookup/status/approve/revoke/capabilities)
+  operations:
+  - media_capabilities_media_capabilities_get
+  - media_verify_tool_media_verify_get
+  - verify_media_media_verify_post
+  - media_certificate_status_media_status__certificate_id__get
+  - approve_media_certificate_media_approve__certificate_id__post
+  - revoke_media_certificate_media_revoke__certificate_id__post
+  - attest_media_media_attest_post
+  - lookup_certificate_media_verify__certificate_id__get
+- capability: trial key provisioning
+  operations:
+  - signup
+- capability: prompt-injection shield
+  operations:
+  - shield-scan
+  - shield-scan-free
+- capability: governed MPP payment sessions
+  operations:
+  - mpp-create-session
+  - mpp-heartbeat
+  - mpp-close-session
+- capability: payment rail discovery
+  operations:
+  - getPaymentDiscovery
+  - getPaymentBadge
+  - getPaymentQuote
+  - getPaymentHealth
+coverage:
+  mcp_tools: 9
+  tools_bound_to_rest: 5
+  tools_mcp_only: 4
+  rest_operations: 23
+  rest_operations_with_tool: 5
+  rest_operations_without_tool: 18
+divergences:
+- The MCP verify tool description says CONSTRAIN is emitted on the wire as the legacy value CLAMP; the OpenAPI Decision
+  enum is [ALLOW, CONSTRAIN, DENY] and the PyPI SDK README says ALLOW/CLAMP/DENY — three surfaces, two spellings
+  of one verdict.
+- MCP tool verify exposes idempotency_key and annotates idempotentHint true; attest and bind annotate idempotentHint
+  false although their REST schemas carry a cmd_id replay-protection field.
+- The MCP server exposes no media, shield, signup or payment-discovery tools; an agent using only MCP cannot reach
+  18 of the 23 REST operations.

@@ -1,0 +1,241 @@
+generated: '2026-09-19'
+method: probed
+source: Live GET probes on taskhawktech.com, www.taskhawktech.com, governance.taskhawktech.com (the API + MCP host)
+  and connect.taskhawktech.com, 2026-09-19. Every row is a request that was issued; every status is the one returned.
+summary:
+  hosts_probed: 4
+  paths_probed: 41
+  documents_served: 16
+  note: 'The apex serves only an RFC 9116 security.txt (plus /llms.txt at the root). The whole machine-discovery
+    surface lives on governance.taskhawktech.com: A2A agent card at BOTH the current and legacy paths (byte-identical),
+    RFC 8414 authorization-server metadata, JWKS, an OpenAI-style ai-plugin.json, an MCP descriptor at /.well-known/mcp.json
+    plus an MCP Registry server.json at the root, L402 and MPP payment-rail documents, Delegation-authority metadata
+    and issuer keys, and a canonical /payment/discovery aggregator. /.well-known/x402 is named by llms.txt, for-agents.txt,
+    the agent card and /payment/discovery but returns 404 (listing drift the provider''s own for-agents.txt warns
+    about). No RFC 9728 protected-resource document is served on any host, including under /mcp/ where the path
+    is answered by the MCP server''s catch-all metadata, and no OpenID Connect discovery or RFC 9727 api-catalog
+    exists.'
+hosts:
+- host: taskhawktech.com
+  role: Company website (static; CloudFront, AWS Route 53)
+  documents:
+  - path: /.well-known/security.txt
+    status: 200
+    content_type: text/plain
+    file: taskhawktech-com-security.txt
+    standard: RFC 9116
+    note: Contact security@taskhawktech.com, Expires 2027-05-01, Policy https://taskhawktech.com/legal/security.
+      No Encryption key URL (Encryption field points at a mailto).
+  - path: /llms.txt
+    status: 200
+    content_type: text/plain; charset=utf-8
+    file: ../llms/taskhawktech-com-llms.txt
+    standard: llms.txt
+    note: Root path, not /.well-known/. Saved under llms/.
+  - path: /.well-known/openid-configuration
+    status: 404
+    note: Custom 404 HTML page (5120 bytes) — a real 404, not an SPA shell.
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+    note: Custom 404 HTML page (5120 bytes) — a real 404, not an SPA shell.
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+    note: Custom 404 HTML page (5120 bytes) — a real 404, not an SPA shell.
+  - path: /.well-known/api-catalog
+    status: 404
+    note: Custom 404 HTML page (5120 bytes) — a real 404, not an SPA shell.
+  - path: /.well-known/ai-plugin.json
+    status: 404
+    note: Custom 404 HTML page (5120 bytes) — a real 404, not an SPA shell.
+  - path: /.well-known/agent-card.json
+    status: 404
+    note: Custom 404 HTML page (5120 bytes) — a real 404, not an SPA shell.
+  - path: /.well-known/agent.json
+    status: 404
+    note: Custom 404 HTML page (5120 bytes) — a real 404, not an SPA shell.
+- host: www.taskhawktech.com
+  role: Alias of the apex (same 10,876-byte homepage)
+  documents:
+  - path: /.well-known/security.txt
+    status: 200
+    content_type: text/plain
+    file: taskhawktech-com-security.txt
+    standard: RFC 9116
+    note: Identical body to the apex copy.
+  - path: /llms.txt
+    status: 200
+    content_type: text/plain; charset=utf-8
+    file: ../llms/taskhawktech-com-llms.txt
+    standard: llms.txt
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: governance.taskhawktech.com
+  role: Kevros Governance API host, MCP server host (/mcp/) and A2A card host
+  documents:
+  - path: /.well-known/security.txt
+    status: 200
+    content_type: text/plain; charset=utf-8
+    file: taskhawktech-com-governance-security.txt
+    standard: RFC 9116
+    note: Same contact/policy as the apex; Canonical points at this host.
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    content_type: application/json
+    file: taskhawktech-com-oauth-authorization-server.json
+    standard: RFC 8414
+    note: 'issuer https://governance.taskhawktech.com; grants authorization_code, client_credentials, jwt-bearer;
+      token auth client_secret_post; ES256; seven governance:* scopes. NOTE: the OpenAPI declares only an X-API-Key
+      scheme, so this OAuth surface is published but not described by the contract. GET /oauth/authorize answers
+      400 and /oauth/token 405 (endpoints exist).'
+  - path: /.well-known/jwks.json
+    status: 200
+    content_type: application/json
+    file: taskhawktech-com-jwks.json
+    standard: RFC 7517
+    note: One P-256 ES256 signing key (kid f6682c69).
+  - path: /.well-known/agent-card.json
+    status: 200
+    content_type: application/json
+    file: ../a2a/taskhawktech-com-agent-card.json
+    standard: A2A Agent Card (current path)
+    note: 24,786 bytes; cache-control public max-age=3600. Graded in a2a/taskhawktech-com-a2a.yml.
+  - path: /.well-known/agent.json
+    status: 200
+    content_type: application/json
+    file: ../a2a/taskhawktech-com-agent-card.json
+    standard: A2A Agent Card (legacy path)
+    note: Byte-identical to /.well-known/agent-card.json.
+  - path: /.well-known/ai-plugin.json
+    status: 200
+    content_type: application/json
+    file: taskhawktech-com-ai-plugin.json
+    standard: OpenAI plugin manifest v1
+    note: auth type none; api.url points at /openapi.json.
+  - path: /.well-known/mcp.json
+    status: 200
+    content_type: application/json
+    file: taskhawktech-com-mcp.json
+    standard: MCP server descriptor (non-standard path)
+    note: Declares endpoint /mcp/, streamable-http, 9 tools / 2 resources / 2 prompts, X-API-Key optional. Its links.documentation
+      (www.taskhawktech.com/docs) 404s.
+  - path: /server.json
+    status: 200
+    content_type: application/json
+    file: taskhawktech-com-mcp-server.json
+    standard: MCP Registry server.json (schema 2025-12-11)
+    note: Root path. name io.github.taskhawk-systems/kevros; remotes[] streamable-http /mcp/; packages[] pypi kevros
+      0.4.0 stdio — PyPI actually serves 0.3.12 (see packages/).
+  - path: /.well-known/l402
+    status: 200
+    content_type: application/json
+    file: taskhawktech-com-l402.json
+    standard: L402 (Lightning HTTP 402) discovery
+    note: 'Per-resource sats pricing; dual macaroon format. Also observed live as a WWW-Authenticate: L402 challenge
+      on POST /governance/verify.'
+  - path: /.well-known/mpp
+    status: 200
+    content_type: application/json
+    file: taskhawktech-com-mpp.json
+    standard: MPP / paymentauth.org Payment scheme discovery
+    note: 'Stripe charge sessions ($0.50 minimum) and Stripe stablecoin Checkout sessions. Also observed live as
+      WWW-Authenticate: Payment.'
+  - path: /.well-known/x402
+    status: 404
+    note: 'Named as the x402 discovery document by llms.txt, for-agents.txt, the agent card, /payment/discovery
+      and the /status page, but returns an empty 404. The x402 challenge itself IS live: POST /governance/verify
+      returns PAYMENT-REQUIRED and WWW-Authenticate: x402 (scheme exact, eip155:8453, USDC, facilitator.payai.network).'
+  - path: /.well-known/delegation-authority
+    status: 200
+    content_type: application/json
+    file: taskhawktech-com-delegation-authority.json
+    standard: Delegation HTTP auth scheme metadata (draft-mcgraw-httpapi-agent-budget-03, individual I-D)
+  - path: /.well-known/delegation-issuer-keys
+    status: 200
+    content_type: application/json
+    file: taskhawktech-com-delegation-issuer-keys.json
+    standard: Delegation issuer key set (ML-DSA COSE keys, RFC 9964 alg ids)
+  - path: /.well-known/mpp/pubkey
+    status: 200
+    content_type: application/json
+    standard: ML-DSA-87 public key for X-Kevros-KGA attestations
+    note: 5,333 bytes; not copied (key material only, referenced by the agent card metadata.post_quantum.public_key_url).
+  - path: /.well-known/agent-authority
+    status: 404
+    note: Named by /payment/discovery access_flow.discovery.agent_authority_url and the agent card, but 404 {"detail":"Not
+      Found"}.
+  - path: /payment/discovery
+    status: 200
+    content_type: application/json
+    file: taskhawktech-com-payment-discovery.json
+    standard: Kevros payment/rail discovery aggregator (non-well-known path)
+    note: Canonical per-endpoint price + rail status document; pricing_fingerprint eb775dbc8d119623 at fetch time.
+      Feeds plans/.
+  - path: /.well-known/openid-configuration
+    status: 404
+    content_type: application/json
+    note: '{"detail":"Not Found"} — no OIDC discovery despite the RFC 8414 document.'
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+    content_type: application/json
+    note: No RFC 9728 protected-resource metadata on the API host.
+  - path: /mcp/.well-known/oauth-protected-resource
+    status: 200
+    content_type: application/json
+    note: 'NOT a document: the MCP server catch-all answers every GET under /mcp/ with its 1,041-byte server-metadata
+      JSON (same body as GET /mcp/). Treated as a miss for RFC 9728.'
+  - path: /.well-known/api-catalog
+    status: 404
+    content_type: application/json
+- host: connect.taskhawktech.com
+  role: TaskHawk Connect — action-boundary readiness-review intake (pilot, production_live false)
+  documents:
+  - path: /.well-known/taskhawk-action-boundary
+    status: 200
+    content_type: application/json
+    file: taskhawktech-com-connect-taskhawk-action-boundary.json
+    standard: Vendor-specific action-boundary descriptor
+    note: Declares decision route /action-boundary/decide (buyer key + idempotency key required, unauthenticated
+      requests rejected), supported decisions ALLOW/CONSTRAIN/HOLD/DENY/HALT, production_decisions_enabled false,
+      AWS Marketplace procurement, $12,000 readiness review, $60k–75k pilot band, and an excluded-uses list (trading,
+      custody, settlement). Not an API contract.
+  - path: /.well-known/taskhawk-action-boundary/keys
+    status: 200
+    content_type: application/json
+    standard: Verification key (AWS KMS ECC_NIST_P256, ECDSA_SHA_256)
+    note: 615 bytes; not copied.
+  - path: /.well-known/security.txt
+    status: 404
+    content_type: application/json
+  - path: /.well-known/openid-configuration
+    status: 404
+    content_type: application/json
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+    content_type: application/json
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+    content_type: application/json
+  - path: /.well-known/api-catalog
+    status: 404
+    content_type: application/json
+  - path: /.well-known/ai-plugin.json
+    status: 404
+    content_type: application/json
+  - path: /.well-known/agent-card.json
+    status: 404
+    content_type: application/json
+  - path: /.well-known/agent.json
+    status: 404
+    content_type: application/json

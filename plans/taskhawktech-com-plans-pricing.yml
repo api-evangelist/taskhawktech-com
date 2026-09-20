@@ -1,0 +1,127 @@
+generated: '2026-09-19'
+method: probed
+source: https://governance.taskhawktech.com/payment/discovery (machine-readable, pricing_fingerprint eb775dbc8d119623,
+  fetched 2026-09-19; saved as well-known/taskhawktech-com-payment-discovery.json) + https://governance.taskhawktech.com/payment/quote?endpoint=/governance/verify
+docs:
+- https://governance.taskhawktech.com/pricing
+- https://taskhawktech.com/pricing
+- https://connect.taskhawktech.com/.well-known/taskhawk-action-boundary
+plan_count: 4
+currency: USD
+model: Trial allowance + per-call machine payment rails; production by AWS Marketplace or direct agreement (no self-serve
+  subscription tiers)
+plans:
+- id: trial
+  name: Trial allowance (API key)
+  price: 0
+  currency: USD
+  period: month
+  included:
+  - 1,000 calls/month
+  - 10 requests/minute
+  - no credit card; POST /signup with {"agent_id"}
+  - 'shield/scan-free: 10 scans/day per IP without a key'
+  source: https://governance.taskhawktech.com/openapi.json SignupResponse defaults + agent card free_tier
+- id: per-call
+  name: Per-call machine payment rails
+  price: per evaluation (see per_call_prices)
+  currency: USD / USDC / sats
+  period: per call
+  rails:
+    x402: USDC (and USDT) on Base eip155:8453, facilitator facilitator.payai.network — enabled
+    l402: Lightning BTC invoice + macaroon — enabled
+    mpp: Stripe card/link charge sessions, $0.50 minimum batched into per-call credits — enabled
+    stripe-stablecoin: Stripe stablecoin Checkout, $0.50 minimum — enabled
+    x402-solana: disabled (resource_not_published)
+    tempo: pending — do not select
+  note: Payment buys the evaluation (ALLOW, CONSTRAIN and DENY are all charged). Re-fetch discovery before paying;
+    pricing_fingerprint changes invalidate quotes.
+- id: readiness-review
+  name: Action-boundary readiness review (TaskHawk Connect)
+  price: 12000
+  currency: USD
+  period: one-time
+  included:
+  - scoped commercial intake; up to 3 completed sessions
+  source: https://connect.taskhawktech.com/.well-known/taskhawk-action-boundary
+  note: Stripe payment link; explicitly not certification or production authorization.
+- id: production
+  name: Production / pilot (marketplace or direct agreement)
+  price: pilot USD 60,000–75,000 for 30–45 days; production by agreement
+  currency: USD
+  period: contract
+  channel: AWS Marketplace prod-tq6gmzvtrtaqe (Kevros AI Governance Gateway) or contracts@taskhawktech.com
+  source: https://connect.taskhawktech.com/.well-known/taskhawk-action-boundary + https://taskhawktech.com/pricing
+per_call_prices:
+- endpoint: /governance/attest
+  free: false
+  recommended_rail: x402
+  rails:
+    x402: $0.02
+    mpp: $0.50
+    stripe-stablecoin: $0.50
+    l402: 30 sats
+- endpoint: /governance/batch
+  free: false
+  recommended_rail: x402
+  rails:
+    x402: $0.01
+    mpp: $0.50
+    stripe-stablecoin: $0.50
+    l402: 15 sats
+- endpoint: /governance/bind
+  free: false
+  recommended_rail: x402
+  rails:
+    x402: $0.02
+    mpp: $0.50
+    stripe-stablecoin: $0.50
+    l402: 30 sats
+- endpoint: /governance/bundle
+  free: false
+  recommended_rail: x402
+  rails:
+    x402: $0.05
+    mpp: $0.50
+    stripe-stablecoin: $0.50
+    l402: 75 sats
+- endpoint: /governance/verify
+  free: false
+  recommended_rail: x402
+  rails:
+    x402: $0.01
+    mpp: $0.50
+    stripe-stablecoin: $0.50
+    l402: 15 sats
+- endpoint: /governance/verify-outcome
+  free: true
+  recommended_rail: null
+  rails: {}
+- endpoint: /media/attest
+  free: false
+  recommended_rail: x402
+  rails:
+    x402: $0.05
+    mpp: $0.50
+    stripe-stablecoin: $0.50
+    l402: 75 sats
+- endpoint: /media/verify
+  free: true
+  recommended_rail: null
+  rails: {}
+- endpoint: /shield/scan
+  free: false
+  recommended_rail: x402
+  rails:
+    x402: $0.01
+    mpp: $0.50
+    stripe-stablecoin: $0.50
+    l402: 15 sats
+- endpoint: /shield/scan-free
+  free: true
+  recommended_rail: null
+  rails: {}
+retired:
+  note: 'https://governance.taskhawktech.com/pricing: "Hosted recurring checkout tiers and prepaid credit packs
+    are retired." The PyPI kevros README (Scout $29 / Sentinel $149 / Sovereign $499) and the agent card pricing.subscriptions
+    (starter $29 / professional $149 / enterprise $499) still advertise them — stale.'

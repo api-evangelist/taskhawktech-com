@@ -1,0 +1,41 @@
+generated: '2026-09-19'
+method: searched
+source: https://taskhawktech.com/changelog (200, "Selected public product and deployment updates, curated from the
+  Kevros monorepo commit history"); API version from https://governance.taskhawktech.com/openapi.json info.version
+  and GET /health.
+docs: https://taskhawktech.com/changelog
+versioning:
+  scheme: undated prose changelog by quarter; API service version separate (0.4.1); product release 4.6.3
+  current: 0.4.1
+  detail: lifecycle/taskhawktech-com-lifecycle.yml
+entries:
+- date: '2026-08-10'
+  quarter: Q3 2026
+  highlights:
+  - TaskHawk Systems named an OpenAI Select Partner within the OpenAI Partner Network (press release https://taskhawktech.com/openai-select-partner)
+  breaking: []
+- date: '2026-07-25'
+  quarter: Q3 2026
+  highlights:
+  - Refined public discovery, verification claims, and review boundaries across the TaskHawk and Kevros web surfaces
+  breaking: []
+- date: '2026-07-10'
+  quarter: Q3 2026
+  highlights:
+  - Published the TaskHawk Connect action-boundary readiness-review route (connect.taskhawktech.com) with explicit
+    non-certification and non-production boundaries
+  breaking: []
+- date: '2026-04-07'
+  quarter: Q2 2026
+  highlights:
+  - Commercial packaging, supply chain signing, and payment reliability improvements
+  breaking: []
+- date: '2026-04-06'
+  quarter: Q2 2026
+  highlights:
+  - Commercial listing work and Kevros Runtime Enforcement Gateway packaging
+  breaking: []
+note: 'The public changelog is product/deployment-level and names no API operations, fields or versions. API-level
+  change evidence lives elsewhere: llms.txt last updated 2026-08-06; contract surface version 2026-05-08.v1; retirement
+  of subscription tiers and credit packs (governance.taskhawktech.com/pricing); free_tier → trial_allowance rename
+  (/.well-known/mcp.json). No breaking changes are announced anywhere.'

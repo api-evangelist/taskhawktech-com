@@ -1,0 +1,73 @@
+# TaskHawk Systems
+> Operational verification infrastructure for autonomous AI, software, and operational systems.
+
+## What is Kevros?
+Kevros is a verified release and evidence gateway for autonomous AI, software, and operational systems from TaskHawk Systems, LLC. TaskHawk also maintains operational verification review material built around pre-action checks, fail-closed behavior, and evidence suitable for independent review.
+
+## Primary Audiences
+- Government and defense program reviewers evaluating AI accountability and operational verification evidence.
+- Enterprise security and compliance teams reviewing autonomous AI, software automation, and operational systems.
+- Public-sector and procurement reviewers.
+- NIST-aligned, university, and research organizations evaluating formal verification and auditability.
+- Integrators using REST verification and controlled gateway review.
+
+## Key Public Pages
+Canonical site: taskhawktech.com
+Primary paths: /, /verify, /platform, /solutions-government, /solutions-enterprise, /integrations, /artifacts, /signals, /comparison, /pricing, /company, /contact, /legal/privacy, /legal/terms, /legal/refund-policy, /legal/security, /legal/acceptable-use, /legal/support, /legal/accessibility.
+
+## Signals
+The /signals page defines the admission boundary for TaskHawk-owned work units. The public registry is intentionally empty. A capability appears only when a named TaskHawk system requires it and its typed interface, resource limits, source identity, authorization, data handling, and evidence contract have passed review. Examples and demonstrations do not imply activation, availability, approval, or product scope.
+
+## Verified Release Landing Page
+The /verify page is the public procurement bridge for standards-driven verified release infrastructure in enterprise and regulated environments. It routes procurement-ready reviewers to AWS Marketplace procurement options for Kevros AI Governance Gateway and routes technical reviewers to TaskHawk briefing and governance-status surfaces. AWS Marketplace availability is a procurement route, not a customer endorsement, revenue claim, standards-body approval, or third-party certification.
+
+Research paths: /research, /research/six-layer-formal-verification, /research/bounded-confidence-envelopes.
+
+## Technical Discovery
+Authoritative integration and payment discovery is available as public, read-only metadata from the live gateway. Do not infer active protocol surfaces, payment behavior, or budget-attestation status from older public pages or cached discovery documents.
+
+## For Agents: Pay Per Action Check
+Give every consequential agent action a decision point before it becomes a consequence. Before an autonomous agent sends, deploys, transfers, or changes anything consequential, it can ask Kevros for a bounded action evaluation. For eligible priced public calls, an agent can discover the current price, select a configured rail, satisfy the HTTP 402 challenge, and retry for an ALLOW, CONSTRAIN, or DENY result.
+
+Start with the no-spend canonical catalog: https://governance.taskhawktech.com/payment/discovery
+Current action-check quote: https://governance.taskhawktech.com/payment/quote?endpoint=/governance/verify
+Rail-specific discovery:
+- x402 on Base USDC: https://governance.taskhawktech.com/.well-known/x402
+- L402 on Lightning BTC: https://governance.taskhawktech.com/.well-known/l402
+- MPP processor-backed USD: https://governance.taskhawktech.com/.well-known/mpp
+- Full machine integration contract: https://governance.taskhawktech.com/for-agents.txt
+
+The entry capability is POST https://governance.taskhawktech.com/governance/verify. The current catalog lists x402 at USD 0.01 per evaluation, L402 at 15 sats per evaluation, and MPP at its USD 0.50 processor minimum for 50 evaluations. Re-fetch the canonical catalog and endpoint quote immediately before paying, and select only a rail marked enabled.
+
+Payment buys the evaluation, never an ALLOW. Discovery metadata, an HTTP 402 challenge, or a directory listing is not proof of payment, execution, adoption, settlement, revenue, certification, or deployment authorization.
+
+## Action Boundary Readiness Review
+TaskHawk Connect provides live intake for a USD 12,000 action-boundary readiness review: https://connect.taskhawktech.com/
+The live page is authoritative for hosted-checkout availability. Checkout is exposed only after the exact Link, Product, Price, and signed webhook path pass verification.
+A completed paid checkout creates a scoped commercial intake. It does not enable production decisioning or constitute certification, approval, or deployment authorization.
+Machine-readable discovery: https://connect.taskhawktech.com/.well-known/taskhawk-action-boundary
+
+## Access and Compliance
+Public website metadata is for read-only review. Paid, executable, partner, or export-controlled access requires the appropriate agreement, authentication, and screening path. Public pages do not expose ITAR, CUI, federal proposal, customer, partner-confidential, private-key, or classified technical data.
+
+## Capabilities
+- Policy evaluation before controlled actions execute.
+- Signed release-token decisions when requests clear policy.
+- ALLOW, CONSTRAIN, and DENY decision classes.
+- Hash-chained provenance for tamper-evident audit trails.
+- Fail-closed behavior when verification cannot be completed.
+- Formal verification artifacts available through public and qualified-review channels.
+Kevros is the current commercial verified release and evidence gateway in this portfolio.
+
+## Compliance Positioning
+TaskHawk describes compliance alignment and self-assessment scope carefully. Public claims should be read as product and organizational posture statements, not as third-party certification unless expressly stated. Controlled review material, sanitized SSP material, and verification artifacts are available to qualified reviewers on request.
+
+## Contact
+- Government/procurement: contracts@taskhawktech.com
+- Investor/strategic briefings: investors@taskhawktech.com
+- Integration review: integrations@taskhawktech.com
+- Billing: billing@taskhawktech.com
+- Legal: legal@taskhawktech.com
+
+## Last Updated
+2026-08-06

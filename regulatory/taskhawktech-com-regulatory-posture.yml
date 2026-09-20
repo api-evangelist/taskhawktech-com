@@ -1,0 +1,60 @@
+generated: '2026-09-19'
+method: searched
+probe: true
+source: https://taskhawktech.com/legal/privacy (effective 2026-04-10, last updated 2026-07-31), /legal/terms, /legal/accessibility,
+  /legal/security, /artifacts; discovery documents on governance.taskhawktech.com; conventional paths probed 2026-09-19.
+signals:
+  data_subject_request:
+    url: https://taskhawktech.com/legal/privacy
+    section: Your Rights and Privacy Choices
+    channel: legal@taskhawktech.com
+    stated_sla: null
+    rights_named:
+    - access
+    - correction
+    - deletion
+    - object to or restrict processing
+    - data portability
+    - opt out of sale (states it does not sell)
+    evidence:
+    - source: https://taskhawktech.com/legal/privacy
+      http_status: 200
+      fetched: '2026-09-19'
+      quote: '"Depending on your jurisdiction, you may have the right to: Access the personal information we hold
+        about you. Request correction of inaccurate information. Request deletion of your personal information.
+        Object to or restrict certain processing activities. Data portability (receive your data in a structured
+        format). Opt out of the sale of personal information (we do not sell personal information). To exercise
+        any of these rights, contact us at legal@taskhawktech.com."'
+    note: A rights list with a named channel inside the privacy policy; no response period is stated and no dedicated
+      intake page or API exists (/privacy/requests 404). GDPR section names Standard Contractual Clauses for EU/EEA
+      transfers.
+checked_no_signal:
+  accessibility_conformance: https://taskhawktech.com/legal/accessibility (200) states a WCAG 2.1 AA design target
+    and practices; no conformance report or VPAT (/accessibility/vpat 404). A target statement is not a conformance
+    report — not recorded.
+  subprocessors: Privacy policy "Data Sharing" names categories (payment processors, marketplace providers, cloud
+    infrastructure providers, Apple App Store) without a dated vendor table; /legal/subprocessors and /legal/dpa
+    404 — not recorded.
+  incident_notification: No stated breach-notification period on /legal/privacy or /legal/terms; support page gives
+    a 1-business-hour P0 response target, which is a support SLA, not a notification commitment.
+  data_residency: 'Privacy policy: "hosted in the United States … customer-selected or TaskHawk-selected cloud regions";
+    discovery docs geofence access to US. A hosting statement, not a residency control document; /docs/data-residency
+    404.'
+  global_privacy_control: No GPC statement on the privacy page; not probed by header, per rule.
+  ai_transparency: Privacy policy maps the enforcement pipeline to NIST AI RMF and states it "does not make decisions
+    about individuals based on automated profiling"; this is a processing description for a governance product,
+    not an Art. 50-style disclosure of AI interaction/content. /ai and /ai/transparency 404.
+  sbom: /security/sbom 404; no SBOM named anywhere. Not derived.
+  support_lifetime: No support period / end-of-life statement.
+  training_data_summary: None; the product does not publish a model training summary (VerifyResponse.enrichment
+    mentions an "enterprise LLM" without naming it).
+  transparency_report: /transparency 404.
+  age_assurance: None.
+  notice_and_action: /legal/report-content 404.
+  exit_assistance: Terms §14 covers key revocation on termination and ledger persistence; no data export/switching
+    assistance documented.
+related_public_posture:
+  export_control: 'Terms §15 and every discovery document: EAR-controlled cryptographic software; US-only geofence;
+    sanctions/denied-party screening before paid or executable access.'
+  government_registrations: SAM.gov CAGE 10YV4, UEI RZCQRY4J5GV3; Virginia SWaM; CMMC L2 / NIST 800-171 self-assessment
+    (conformance/).

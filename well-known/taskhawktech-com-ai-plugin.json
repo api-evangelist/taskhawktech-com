@@ -1,0 +1,14 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "Kevros Governance API",
+  "name_for_model": "kevros_governance_api",
+  "description_for_human": "Verify autonomous agent actions, get cryptographic proof, and build trust scores. Trial allowance available via POST /signup.",
+  "description_for_model": "Runtime enforcement for autonomous agents. Protected execution requires an X-API-Key or verified Delegation proof before any paid rail credential is accepted. Call POST /governance/verify with {action_type, action_payload, agent_id} before taking an action to get a signed release token (ALLOW/CONSTRAIN/DENY). Every decision is recorded in a hash-chained provenance ledger. Per-call pricing starts at $0.01 via x402 USDC on Base, L402, MPP, or a Kevros API key. A trial allowance can be provisioned with POST /signup using an agent_id. Other primitives: POST /governance/attest ($0.02), POST /governance/bind ($0.02), POST /governance/bundle ($0.05), and POST /shield/scan ($0.01). Public discovery is read-only metadata; paid or executable access is subject to U.S. sanctions, restricted-party, export-control, and abuse screening.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://governance.taskhawktech.com/openapi.json"
+  }
+}

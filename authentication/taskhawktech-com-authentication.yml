@@ -1,0 +1,16 @@
+generated: '2026-09-19'
+method: derived
+source: openapi/taskhawktech-com-openapi.yml
+summary:
+  types:
+  - apiKey
+  api_key_in:
+  - header
+schemes:
+- name: ApiKeyAuth
+  type: apiKey
+  in: header
+  parameter: X-API-Key
+  description: Get a trial key via POST /signup. 1,000-call trial allowance.
+  sources:
+  - openapi/taskhawktech-com-openapi.yml

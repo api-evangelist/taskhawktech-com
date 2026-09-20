@@ -1,0 +1,253 @@
+generated: '2026-09-19'
+method: probed
+status: published
+source: https://governance.taskhawktech.com/mcp/ (POST tools/list, resources/list, prompts/list and initialize,
+  2026-09-19, no credentials); descriptors https://governance.taskhawktech.com/.well-known/mcp.json and https://governance.taskhawktech.com/server.json;
+  PyPI kevros metadata
+server:
+  name: kevros-governance-api
+  title: Kevros Governance API
+  transport: streamable-http
+  url: https://governance.taskhawktech.com/mcp/
+  protocol_version: '2025-03-26'
+  server_version: 0.4.1
+  framework: FastMCP (x-fastmcp-wrap-result / _meta.fastmcp on every tool)
+  registry_name: io.github.taskhawk-systems/kevros
+  manifest: well-known/taskhawktech-com-mcp-server.json
+  descriptor: well-known/taskhawktech-com-mcp.json
+  listings:
+  - https://smithery.ai/servers/@taskhawk-systems/kevros (200)
+  - https://mcpize.com/mcp/kevros (200)
+  client_config: '{"mcpServers":{"kevros":{"url":"https://governance.taskhawktech.com/mcp/"}}}'
+  note: 'GET /mcp (no slash) 307s to /mcp/; GET /mcp/ returns a JSON self-description. POST JSON-RPC to /mcp/ works
+    without any header beyond Content-Type and Accept: application/json, text/event-stream. initialize reports tools/prompts/resources
+    listChanged and an io.modelcontextprotocol/ui extension.'
+deployment:
+  mode: both
+  endpoint: https://governance.taskhawktech.com/mcp/
+  install: pip install 'kevros[mcp]'
+  package: https://pypi.org/project/kevros/
+  auth: api-key
+  verified: probed
+  note: 'REMOTE is verified: the hosted endpoint answered tools/list, resources/list, prompts/list and initialize
+    anonymously on 2026-09-19. LOCAL-STDIO is declared, not run: the provider''s own MCP Registry server.json lists
+    packages[] {registryType pypi, identifier kevros, version 0.4.0, transport stdio}, and the PyPI package ships
+    an `mcp` extra (mcp>=1.0.0) — but PyPI''s latest release is 0.3.12 (2026-04-04), not 0.4.0, and neither the
+    PyPI README nor the docs publish the stdio launch command, so the install line above is the package install,
+    not a verified server command. auth is api-key because discovery and the five no-charge tools need nothing while
+    verify/attest/bind/bundle need an X-API-Key (auto-provisioned on first tool call per /.well-known/mcp.json)
+    or a verified Delegation proof.'
+auth:
+  methods:
+  - api-key
+  - none (discovery + no-charge tools)
+  - delegation-proof (governed execution)
+  apikey:
+    header: X-API-Key
+    required: false
+    required_for:
+    - verify
+    - attest
+    - bind
+    - bundle
+    obtain: POST https://governance.taskhawktech.com/signup {"agent_id":"..."} — 1,000-call trial allowance, 10
+      req/min
+    auto_provision: true
+  oauth2:
+    published: true
+    used_by_mcp: false
+    note: RFC 8414 metadata exists at /.well-known/oauth-authorization-server but no RFC 9728 protected-resource
+      document is served for /mcp/ and the descriptor declares header auth only; MCP OAuth discovery would fail.
+tool_count: 9
+resource_count: 2
+prompt_count: 2
+tools:
+- name: verify
+  title: Verify Action
+  description: 'Verify an action against policy bounds before executing it. Returns ALLOW (proceed), CONSTRAIN (proceed
+    with modified values; emitted on the wire as the legacy value CLAMP - both refer to the same verdict, CONSTRAIN
+    is the public name), or DENY (stop). Every verification is recorded in a hash-chained provenance ledger. Cost:
+    $0.01 per call.'
+  required_inputs:
+  - action_type
+  - action_payload
+  - agent_id
+  inputs:
+  - action_type
+  - action_payload
+  - agent_id
+  - policy_context
+  - template_id
+  - idempotency_key
+  annotations:
+    readOnlyHint: false
+    destructiveHint: false
+    idempotentHint: true
+    openWorldHint: false
+- name: attest
+  title: Attest Action
+  description: 'Create a hash-chained provenance record for an action you''ve taken. Each attestation extends the
+    append-only evidence chain. The hash can be independently verified by any third party. Cost: $0.02 per call.'
+  required_inputs:
+  - agent_id
+  - action_description
+  - action_payload
+  inputs:
+  - agent_id
+  - action_description
+  - action_payload
+  - context
+  annotations:
+    readOnlyHint: false
+    destructiveHint: false
+    idempotentHint: false
+    openWorldHint: false
+- name: bind
+  title: Bind Intent to Command
+  description: 'Declare an intent and cryptographically bind it to a command. Proves that the command was issued
+    in service of the declared intent. Use verify-outcome after execution to close the loop. Cost: $0.02 per call.'
+  required_inputs:
+  - agent_id
+  - intent_type
+  - intent_description
+  - command_payload
+  inputs:
+  - agent_id
+  - intent_type
+  - intent_description
+  - command_payload
+  - goal_state
+  - intent_source
+  - parent_intent_id
+  annotations:
+    readOnlyHint: false
+    destructiveHint: false
+    idempotentHint: false
+    openWorldHint: false
+- name: verify-outcome
+  title: Verify Outcome
+  description: 'Verify that an executed action achieved its declared intent. Closes the loop: intent -> command
+    -> action -> outcome -> verification. Free (included with bind).'
+  required_inputs:
+  - agent_id
+  - intent_id
+  - binding_id
+  - actual_state
+  inputs:
+  - agent_id
+  - intent_id
+  - binding_id
+  - actual_state
+  - tolerance
+  annotations:
+    readOnlyHint: false
+    destructiveHint: false
+    idempotentHint: true
+    openWorldHint: false
+- name: bundle
+  title: Generate Compliance Bundle
+  description: 'Generate a certifier-grade compliance evidence bundle. Contains hash-chained provenance, intent
+    bindings, PQC attestations, and verification instructions. Independently verifiable without Kevros access. Cost:
+    $0.05 per call.'
+  required_inputs:
+  - agent_id
+  inputs:
+  - agent_id
+  - time_range_start
+  - time_range_end
+  - max_records
+  - include_intent_chains
+  - include_pqc_signatures
+  - include_verification_instructions
+  annotations:
+    readOnlyHint: true
+    destructiveHint: false
+    idempotentHint: true
+    openWorldHint: false
+- name: health
+  title: Health Check
+  description: Check the governance gateway health status. Free.
+  required_inputs: []
+  inputs:
+  - verbose
+  annotations:
+    readOnlyHint: true
+    destructiveHint: false
+    idempotentHint: true
+    openWorldHint: false
+- name: status
+  title: Trust Status
+  description: 'Check your current usage and quota: calls used, calls remaining, tier, rate limits, and billing
+    status. Free.'
+  required_inputs: []
+  inputs:
+  - include_chain_details
+  annotations:
+    readOnlyHint: true
+    destructiveHint: false
+    idempotentHint: true
+    openWorldHint: false
+- name: check-peer
+  title: Check Peer Trust
+  description: Check another agent's trust score and governance history. Returns trust score (0-100), chain length,
+    attestation count, and tier. Free, no API key needed.
+  required_inputs:
+  - agent_id
+  inputs:
+  - agent_id
+  annotations:
+    readOnlyHint: true
+    destructiveHint: false
+    idempotentHint: true
+    openWorldHint: false
+- name: verify-token
+  title: Verify Release Token
+  description: Verify a release token from another agent. Confirms the token is authentic, was issued by the Kevros
+    gateway, and remains currently authorized after any halt or mode transition. Free, no API key needed.
+  required_inputs:
+  - release_token
+  inputs:
+  - release_token
+  - token_preimage
+  annotations:
+    readOnlyHint: true
+    destructiveHint: false
+    idempotentHint: true
+    openWorldHint: false
+resources:
+- name: agent_card_resource
+  uri: kevros://agent-card
+  mime: text/plain
+  description: A2A agent card for the Kevros Governance API.
+- name: trust_status_resource
+  uri: kevros://trust-status
+  mime: text/plain
+  description: Current governance chain status.
+prompts:
+- name: verify-before-act
+  arguments:
+  - action_type (required)
+  - action_description (required)
+  - agent_id
+  description: Pre-flight governance check. Generates a verify request for an action before executing it.
+- name: governance-audit
+  arguments:
+  - agent_id (required)
+  - time_range_start
+  - time_range_end
+  description: Generate a compliance audit bundle for an agent's actions over a time range.
+pricing:
+  paid_tools:
+    verify: $0.01
+    attest: $0.02
+    bind: $0.02
+    bundle: $0.05
+  no_charge_tools:
+  - health
+  - status
+  - check-peer
+  - verify-token
+  - verify-outcome
+  source: well-known/taskhawktech-com-mcp.json + tool descriptions
+crosswalk: mcp/taskhawktech-com-tool-crosswalk.yml
+tools_list_verbatim: mcp/taskhawktech-com-mcp-tools-list.json

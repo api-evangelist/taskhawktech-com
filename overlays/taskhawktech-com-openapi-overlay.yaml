@@ -1,0 +1,71 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for Kevros Governance API
+  version: 1.0.0
+extends: openapi/taskhawktech-com-openapi.yml
+x-generated: '2026-09-19'
+x-method: generated
+x-source: openapi/taskhawktech-com-openapi.yml
+actions:
+- target: $.info
+  update:
+    x-apievangelist:
+      catalog: https://apis.io/taskhawktech-com
+      provider: TaskHawk Systems
+      maintainer: Kin Lane <kin@apievangelist.com>
+      artifacts:
+      - apis.yml
+      - authentication/taskhawktech-com-authentication.yml
+      - conventions/taskhawktech-com-conventions.yml
+      - errors/taskhawktech-com-problem-types.yml
+      - conformance/taskhawktech-com-conformance.yml
+      - lifecycle/taskhawktech-com-lifecycle.yml
+      - plans/taskhawktech-com-plans-pricing.yml
+      - rate-limits/taskhawktech-com-rate-limits.yml
+      - mcp/taskhawktech-com-tool-crosswalk.yml
+      - a2a/taskhawktech-com-a2a.yml
+- target: $.paths["/governance/verify"].post.responses["402"]
+  update:
+    content:
+      application/problem+json:
+        schema:
+          type: object
+          description: 'Observed live 2026-09-19: RFC 9457 problem carrying x402/L402/MPP challenges (see errors/taskhawktech-com-problem-types.yml)'
+          properties:
+            type:
+              type: string
+            title:
+              type: string
+            status:
+              type: integer
+            detail:
+              type: string
+            challengeId:
+              type: string
+            accepts:
+              type: array
+            discovery_url:
+              type: string
+              format: uri
+- target: $.paths["/governance/verify"].post
+  update:
+    x-apievangelist-idempotency:
+      mechanism: requestBody.idempotency_key
+      coverage: partial — this operation only
+    x-apievangelist-mcp-tool: verify
+- target: $.paths["/governance/attest"].post
+  update:
+    x-apievangelist-mcp-tool: attest
+- target: $.paths["/governance/bind"].post
+  update:
+    x-apievangelist-mcp-tool: bind
+- target: $.paths["/governance/verify-outcome"].post
+  update:
+    x-apievangelist-mcp-tool: verify-outcome
+- target: $.paths["/governance/bundle"].post
+  update:
+    x-apievangelist-mcp-tool: bundle
+- target: $.components.securitySchemes
+  update:
+    x-apievangelist-note: RFC 8414 OAuth metadata, Delegation-proof headers and three payment-rail credentials (x402,
+      L402, MPP) are accepted live but not declared here; see authentication/ and conventions/.

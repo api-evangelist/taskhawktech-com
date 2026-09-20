@@ -1,0 +1,63 @@
+generated: '2026-09-19'
+method: searched
+source: https://governance.taskhawktech.com/openapi.json (info.version, x-service-info), https://governance.taskhawktech.com/health
+  (contract_versions), https://governance.taskhawktech.com/status, https://governance.taskhawktech.com/.well-known/mcp.json
+  (deprecated free_tier block), https://taskhawktech.com/changelog, https://taskhawktech.com/legal/support (response
+  targets), https://taskhawktech.com/legal/terms §14 — 2026-09-19.
+versioning:
+  scheme: unversioned paths; semantic service version
+  mechanism: No version segment in any path (/governance/verify, /media/attest). The gateway reports its version
+    in info.version (0.4.1), in GET /health (version 0.4.1, contract_versions.a2a_paid_governance surface_version
+    2026-05-08.v1 / contract_id aaas-contract-v1 / contract_version 1.0.0 / core_version TELv1) and exposes an X-Kevros-Version
+    response header (listed in Access-Control-Expose-Headers on live responses). The product release version (4.6.3)
+    is distinct from the API version (0.4.1). SignupResponse.contract_versions carries the same surface metadata
+    per response.
+  current: 0.4.1
+  product_release_version: 4.6.3
+  contract_surface_version: 2026-05-08.v1
+  docs: https://governance.taskhawktech.com/api
+  note: No published versioning or breaking-change policy page.
+deprecation:
+  policy_url: null
+  sunset_header: false
+  deprecation_header: false
+  changelog: https://taskhawktech.com/changelog
+  notes: 'No deprecation policy is published and no RFC 8594 Sunset/Deprecation headers are documented. One in-band
+    deprecation exists: /.well-known/mcp.json pricing.free_tier carries {"deprecated": true, "use": "trial_allowance"}
+    — the "free tier" naming was retired in favour of "trial allowance" (1,000 calls/month), and governance.taskhawktech.com/pricing
+    states that hosted recurring checkout tiers and prepaid credit packs are retired. The PyPI SDK README and the
+    agent card pricing.subscriptions still advertise the retired $29/$149/$499 tiers.'
+  deprecated_operations: none — no operation in openapi/taskhawktech-com-openapi.yml is flagged deprecated:true
+  retired_surfaces:
+  - what: Subscription tiers Scout/Sentinel/Sovereign ($29/$149/$499) and credit packs
+    evidence: 'https://governance.taskhawktech.com/pricing: "Hosted recurring checkout tiers and prepaid credit
+      packs are retired."'
+  - what: free_tier naming
+    evidence: well-known/taskhawktech-com-mcp.json pricing.free_tier.deprecated true → trial_allowance
+status_page:
+  url: https://governance.taskhawktech.com/status
+  kind: provider-rendered status + discovery page (not a third-party status host)
+  probed: 200
+  notes: Lists per-endpoint price/protocol status, rail discovery state (x402/L402/MPP live, Tempo pending) and
+    points at external 402index/satring directory metrics; it is a configuration summary, not an incident history.
+sla:
+  url: https://taskhawktech.com/legal/support
+  public_uptime_target: null
+  support_response_targets:
+    P0 production down or security incident: 1 business hour, hourly updates
+    P1 major feature broken: 4 business hours, daily
+    P2 functional issue with workaround: 1 business day, every 2 business days
+    P3 question or feature request: 2 business days
+  business_hours: Monday–Friday 09:00–18:00 US Eastern, excluding US federal holidays
+  notes: Support response targets only; no numeric availability SLA is published (/legal/sla and /sla 404).
+termination:
+  source: https://taskhawktech.com/legal/terms §14
+  notes: 'Either party may terminate at any time; on termination API keys are revoked and provenance records remain
+    in the append-only ledger. Privacy policy: API usage metadata and provenance retained for the subscription plus
+    90 days.'
+availability_geofence:
+  regions:
+  - US
+  source: agent card availability + /.well-known/l402 + /.well-known/mpp
+  notes: US-only commercial access effective 2026-04-19; international access by direct agreement after export-control
+    review.

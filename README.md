@@ -64,5 +64,25 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-TaskHawk Systems is a company surfaced via the API Evangelist harvest backlog (source: a2a-registry) and added to the network as a stub for full-pipeline profiling.
-- https://taskhawktech.com/
+TaskHawk Systems, LLC (Charlottesville, Virginia) builds operational verification infrastructure for autonomous AI and software systems. Its commercial product, **Kevros**, is a verified release and evidence gateway: before an agent spends, deploys, sends or actuates, it POSTs the proposed action to the Kevros Governance API and receives a signed ALLOW / CONSTRAIN / DENY decision with a release token, recorded in a hash-chained, post-quantum-signed provenance ledger.
+
+- Website: https://taskhawktech.com/
+- API gateway: https://governance.taskhawktech.com (OpenAPI 3.1 at `/openapi.json`, 23 operations)
+- MCP server: https://governance.taskhawktech.com/mcp/ (Streamable HTTP, 9 tools — anonymous `tools/list`)
+- A2A agent card: https://governance.taskhawktech.com/.well-known/agent-card.json (near-conformant)
+- Machine payments: HTTP 402 with x402 (USDC on Base), L402 (Lightning) and MPP (Stripe) challenges; discovery at `/payment/discovery`
+- Trial: `POST /signup` — 1,000 calls/month, no card
+
+## What this profile holds
+
+| Directory | Contents | Method |
+|---|---|---|
+| `openapi/` | Kevros Governance API 0.4.1 (verbatim source in `_original/`) | searched |
+| `a2a/` | Agent card (verbatim) + A2A 1.0.0 grade | probed |
+| `mcp/` | MCP server profile, verbatim `tools/list`, REST↔tool crosswalk | probed / derived |
+| `well-known/` | 16 served discovery documents across 4 hosts, indexed with HTTP status | probed |
+| `llms/` | `llms.txt` (apex + gateway) and `for-agents.txt` (verbatim) | searched |
+| `packages/` | PyPI `kevros` 0.3.12, `kevros-agent-framework` 0.1.5 | searched |
+| `authentication/`, `scopes/`, `conventions/`, `errors/`, `lifecycle/`, `conformance/`, `plans/`, `rate-limits/`, `changelog/`, `data-model/`, `regulatory/`, `security/`, `skills/`, `overlays/` | Derived and searched profiles per the API Evangelist enrichment contract | mixed |
+
+Profiled 2026-09-19. Source: API Evangelist harvest backlog (a2a-registry).

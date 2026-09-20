@@ -1,0 +1,223 @@
+KEVROS RUNTIME INTELLIGENCE GATEWAY - FOR AI AGENTS
+====================================================
+
+READ FIRST
+  Endpoint health, discovery metadata, HTTP 402, Delegation challenges,
+  settlement, and revenue are separate signals.
+
+  Do not infer settlement or revenue from:
+    - /payment/health
+    - /.well-known/* discovery
+    - HTTP 402 or Delegation challenge counts
+    - crawler/directory traffic
+    - dry-run or demo output
+
+ACCESS AND COMPLIANCE
+  Public discovery endpoints are read-only metadata.
+
+  Paid or executable access requires one of:
+    - X-API-Key
+    - verified Delegation proof
+    - verified x402, L402, or MPP rail credential from a safe-method
+      payment challenge
+
+  Access is subject to United States sanctions, restricted-party,
+  export-control, prohibited-end-use, wallet, payment, and account-abuse
+  screening. Public discovery endpoints do not expose ITAR, CUI, federal
+  proposal, customer, partner-confidential, private-key, or classified
+  technical data. Do not submit controlled technical data unless a written
+  agreement and approved handling path are in place.
+
+ONBOARDING ORDER
+  1. Immediate path, no Delegation-proof signer:
+       POST https://governance.taskhawktech.com/signup
+       Body: {"agent_id": "your-agent-id"}
+       Response: {"api_key": "kvrs_...", "tier": "free", ...}
+
+       Then send:
+       X-API-Key: kvrs_...
+
+  2. No-spend discovery:
+       GET  /.well-known/delegation-authority
+       GET  /.well-known/delegation-issuer-keys
+       GET  /payment/health
+       GET  /payment/quote?endpoint=/governance/verify
+       GET  /.well-known/x402
+       GET  /.well-known/l402
+       GET  /.well-known/mpp
+
+       Some GET/HEAD or dry-run compatibility paths can expose HTTP 402
+       payment metadata for directories. That metadata is not settlement.
+
+  3. Agentic paid rail flow, no Delegation-proof signer:
+       GET or HEAD /governance/verify
+       receives HTTP 402 rail metadata without executing protected work.
+
+       Standard route:
+         /governance/verify
+       Rail-priority routes after selecting a rail:
+         /x402/governance/verify
+         /l402/governance/verify
+         /mpp/governance/verify
+
+       Priority aliases canonicalize to the same paid endpoint, price,
+       metering, caveats, and ledger records. They only narrow safe-method
+       challenge discovery to one settlement rail.
+
+       Then pay/sign one advertised rail and send the executable request:
+         POST /governance/verify
+         Authorization: L402 <macaroon>:<preimage>
+         or PAYMENT-SIGNATURE: <x402 payment>
+         or Authorization: Payment <MPP credential>
+
+       The POST body is the real governance payload. Do not POST protected
+       work first just to discover pricing; unauthenticated executable POST is
+       Delegation-gated.
+
+  4. Delegation-first executable governance:
+       POST /governance/verify without X-API-Key or Delegation proof
+       returns HTTP 401 or HTTP 403 with a Delegation challenge before
+       any executable 402 rail flow.
+
+       Expected gate:
+         HTTP/1.1 401 Unauthorized
+         Delegation-Version: 1
+         WWW-Authenticate: Delegation ... nonce="<base64url-16-bytes>", max-age=300, rails="mpp x402 l402"
+
+       Retry with one of:
+         Authorization: Delegation <base64url-bounded-authority-token>
+         Delegation-Proof: :<base64-cose>:
+         JSON body {"delegation_proof": "<base64url-bounded-authority-token>"}
+         Content-Type: application/delegation-proof+cose
+
+       Accepted Delegation proof profiles:
+         - COSE_Sign1 additive profile for single-primary rails such as l402
+         - direct-CBOR transition profile for settlement rails that require
+           the dual-signature transition format
+
+  5. Settlement:
+       After Delegation proof verifies, the request may proceed to x402,
+       L402, or MPP. Payment is verified only by rail-specific evidence:
+         x402: on-chain/facilitator settlement receipt
+         L402: valid macaroon/invoice plus settled preimage
+         MPP: Stripe/MPP-specific payment confirmation
+
+DIRECTORY AND CHECKER RULES
+  Health is per protocol and per endpoint.
+
+  Do not advertise a rail as challenge-shape verified unless the external
+  checker gets that protocol's expected challenge shape for the same endpoint.
+
+  Provider name, source, payment asset, payment network, and facilitator fields
+  must match what the endpoint actually emits. Missing or inconsistent metadata
+  is listing drift even when HTTP 402 is present.
+
+  A generic HTTP 402 is not enough for L402 or MPP verification. If a checker
+  reports "macaroon format not detected" for L402, treat L402 as degraded for
+  that endpoint. If MPP is degraded despite HTTP 402, treat MPP as degraded
+  until the checker sees MPP-specific challenge/payment metadata.
+
+  One endpoint may expose HTTP 402 compatibility metadata for directory crawlers
+  while executable POST remains separately gated by Delegation proof.
+
+DISCOVERY ENDPOINTS
+  Agent Card (A2A):   GET  /.well-known/agent-card.json  (alias: /.well-known/agent.json)
+  AI Plugin:          GET  /.well-known/ai-plugin.json
+  MCP metadata:       GET  /.well-known/mcp.json
+  MCP server manifest: GET  /server.json
+  OpenAPI spec:       GET  /openapi.json
+  x402 metadata:      GET  /.well-known/x402
+  L402 metadata:      GET  /.well-known/l402
+  MPP metadata:       GET  /.well-known/mpp
+  Payment health:     GET  /payment/health
+  Payment quote:      GET  /payment/quote?endpoint=/path
+  Delegation authority: GET  /.well-known/delegation-authority
+  Delegation keys:      GET  /.well-known/delegation-issuer-keys
+  Protocol health:    GET  /protocol/427/health
+  MCP tools:          POST /mcp/  (method: tools/list)
+  API documentation:  GET  /api
+
+PAYMENT RAIL STATUS
+  Candidate paid rails after safe-method discovery or verified Delegation proof:
+    - x402 on Base
+    - L402 on Lightning
+    - MPP processor-backed machine payment
+
+  Commercial access and procurement routes are separate from per-call
+  settlement. A public checkout link is not per-call settlement proof.
+
+  Disabled or pending rails must not be selected from stale docs. Re-fetch:
+    GET /payment/discovery
+    GET /payment/health
+    GET /payment/quote?endpoint=/path
+
+  If discovery is unreachable or protocol-specific checker output is degraded,
+  fail closed and do not invent rails.
+
+RUNTIME INTELLIGENCE PRIMITIVES
+  POST /governance/verify          paid or key-backed  Verify action, get ALLOW/CONSTRAIN/DENY
+  POST /governance/attest          paid or key-backed  Record action in provenance ledger
+  POST /governance/bind            paid or key-backed  Bind intent to command
+  POST /governance/verify-outcome  free                Verify outcome matches intent
+  POST /governance/bundle          paid or key-backed  Compliance evidence package
+  POST /shield/scan                paid or key-backed  Prompt injection detection
+  POST /shield/scan-free           free                Limited free scan path
+
+MEDIA AUTHORITY PRIMITIVES
+  POST /media/attest               paid or key-backed  Issue media authority certificate ($0.05)
+  POST /media/verify               free                Verify media hash against certificate
+  GET  /media/verify/{id}          free                Human/agent certificate lookup
+  GET  /media/verify               free                Human verifier page; file hashing occurs locally
+  GET  /media/status/{id}          free                Public lifecycle status and approval state
+  GET  /media/capabilities         free                Machine-readable media authority contract
+  POST /media/approve/{id}         operator key only   Approve or deny a certificate for campaign use
+  POST /media/revoke/{id}          operator key only   Revoke a certificate
+
+  Payment boundary:
+    - /media/attest is the paid issuance call.
+    - /media/verify, /media/status, and /media/capabilities are free public verification/discovery.
+    - /media/approve and /media/revoke are not paid rail calls. They require an operator API key
+      bound to the certificate's agent_id or an internal admin key. Do not send x402, L402, or MPP
+      credentials to mutate lifecycle state.
+
+  Claim boundary:
+    A Kevros media certificate proves a Kevros-recorded media hash, provenance-chain position,
+    lifecycle status, and asserted authority layers. It is not a standalone deepfake detector,
+    legal rights clearance, subject-consent determination, or C2PA validator unless those
+    layers are explicitly present and marked as verified. It also does not prove advertising
+    delivery, targeting, campaign spend, conversion, endorsement, payment settlement, or revenue.
+
+VERIFY EXAMPLE WITH API KEY
+  POST https://governance.taskhawktech.com/governance/verify
+  Headers:
+    Content-Type: application/json
+    X-API-Key: kvrs_your_key_here
+  Body:
+    {
+      "action_type": "send_email",
+      "action_payload": {
+        "to": "client@example.com",
+        "subject": "Q1 Report",
+        "body": "Attached is the Q1 financial report."
+      },
+      "agent_id": "your-agent-id"
+    }
+
+PAYMENT POLICY
+  Payment covers the governance evaluation, not the outcome.
+  ALLOW, CONSTRAIN, and DENY are all paid evaluations on paid routes.
+  A denied action is still an evaluated and recorded action.
+
+TRUST VERIFICATION
+  Verify a Kevros release token:
+    POST /governance/verify-token
+
+  Verify a claimed trust score:
+    GET /passport/{agent_id}
+    GET /governance/reputation/{agent_id}
+
+CONTACT
+  Email:    info@taskhawktech.com
+  Website:  https://www.taskhawktech.com
+  API docs: https://governance.taskhawktech.com/openapi.json
+  Gateway:  https://governance.taskhawktech.com

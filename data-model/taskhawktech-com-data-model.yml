@@ -1,0 +1,188 @@
+generated: '2026-09-19'
+method: derived
+source: Derived from the 37 component schemas and id-reference fields in openapi/taskhawktech-com-openapi.yml (verification_id,
+  provenance_hash/hash_prev, intent_id/binding_id, certificate_id, agent_id, session ids) plus /media/capabilities.
+  No object-reference page exists.
+docs: https://governance.taskhawktech.com/api
+notation: relationships use has_one / has_many / belongs_to with the referencing field; direction is from the entity
+  that owns the reference.
+entities:
+- name: Agent
+  id_field: agent_id
+  domain: identity
+  description: Client-chosen identifier of the requesting autonomous system; present on every write. Has a public
+    trust score/passport (reputation, check-peer) outside the OpenAPI.
+- name: Operator / ApiKey
+  id_field: api_key
+  domain: identity
+  description: 'Trial or contracted key issued by signup (SignupRequest → SignupResponse: tier, monthly_limit, rate_limit_per_minute,
+    upgrade_url, profile_url). Operator-scoped, per-key limits.'
+- name: Verification
+  id_field: verification_id
+  domain: governance
+  schema: VerifyRequest / VerifyResponse
+  description: 'A pre-action policy evaluation: decision (ALLOW/CONSTRAIN/DENY), release_token, applied_action,
+    policy_applied, reason, enforcement_mode, advisory_decision, risk_category, epoch, provenance_hash, hash_prev.'
+- name: ReleaseToken
+  id_field: release_token
+  domain: governance
+  description: Cryptographically signed token issued on ALLOW/CONSTRAIN; verified server-side via POST /governance/verify-token
+    (outside the spec); carried downstream as X-Kevros-Release-Token.
+- name: Attestation
+  id_field: provenance_hash
+  domain: provenance
+  schema: AttestRequest / AttestResponse
+  description: Append-only hash-chained record of an action taken; links to prior_attestation_hash; optional PQCAnchor.
+- name: IntentBinding
+  id_field: binding_id
+  domain: governance
+  schema: BindIntentRequest / BindIntentResponse
+  description: HMAC-signed binding of a declared intent (IntentType, IntentSource, goal_state, parent_intent_id)
+    to a command_payload; yields intent_id + binding_id.
+- name: OutcomeVerification
+  id_field: null
+  domain: governance
+  schema: VerifyOutcomeRequest / VerifyOutcomeResponse
+  description: Compares actual_state to the bound goal_state within tolerance; OutcomeStatus ACHIEVED/PARTIALLY_ACHIEVED/FAILED/BLOCKED/TIMEOUT.
+- name: ComplianceBundle
+  id_field: null
+  domain: evidence
+  schema: BundleRequest / BundleResponse
+  description: 'Portable evidence package over an agent + time range: provenance records, intent chains, PQC signatures,
+    verification instructions.'
+- name: MediaCertificate
+  id_field: certificate_id
+  domain: media
+  schema: MediaAttestRequest / MediaAttestResponse / MediaVerifyRequest / MediaVerifyResponse / MediaApprovalRequest
+    / MediaRevokeRequest
+  description: 'kevros_media_authority_certificate (schema media-attestation-1.1) over a sha-256 media_hash: MediaType,
+    frame_hashes, c2pa_manifest_hash, CaptureLocation, DeviceInfo, rights/consent/campaign assertions, lifecycle
+    (approved/denied/revoked, public status).'
+- name: MPPSession
+  id_field: session_id
+  domain: payments
+  schema: MPPSessionRequest / MPPSessionResponse / MPPHeartbeatRequest / MPPCloseRequest
+  description: 'Governed streaming payment session: session_budget_cents, duration_seconds, spending_rate_limit_cents_per_minute,
+    allowed_services, payment_rail; heartbeat drift checks; close seals provenance.'
+- name: ShieldScan
+  id_field: null
+  domain: security
+  schema: ScanRequest / ScanResponse
+  description: Prompt-injection classification of prompt (+context) for an agent_id.
+- name: PaymentQuote / RailHealth
+  id_field: pricing_fingerprint
+  domain: payments
+  description: Per-endpoint per-rail price + rail challenge configuration from /payment/discovery, /payment/quote,
+    /payment/health, /payment/badge.
+- name: PQCAnchor
+  id_field: null
+  domain: provenance
+  description: Post-quantum signature anchor (ML-DSA-87) attached to attestations and bundles.
+enums:
+  Decision:
+  - ALLOW
+  - CONSTRAIN
+  - DENY
+  EnforcementMode:
+  - enforce
+  - advisory
+  - deny
+  - gated
+  RiskCategory:
+  - MINIMAL
+  - LIMITED
+  - HIGH
+  - UNACCEPTABLE
+  OutcomeStatus:
+  - ACHIEVED
+  - PARTIALLY_ACHIEVED
+  - FAILED
+  - BLOCKED
+  - TIMEOUT
+  IntentType:
+  - NAVIGATION
+  - MANIPULATION
+  - SENSING
+  - COMMUNICATION
+  - MAINTENANCE
+  - EMERGENCY
+  - OPERATOR_COMMAND
+  - AI_GENERATED
+  - AUTOMATED
+  IntentSource:
+  - HUMAN_OPERATOR
+  - AI_PLANNER
+  - MISSION_SCRIPT
+  - REMOTE_API
+  - SENSOR_TRIGGER
+  - INTERNAL
+  MediaType:
+  - PHOTO
+  - VIDEO
+  - AUDIO
+  - DOCUMENT
+relationships:
+- from: Agent
+  rel: has_many
+  to: Verification
+  via: agent_id
+- from: Agent
+  rel: has_many
+  to: Attestation
+  via: agent_id
+- from: Agent
+  rel: has_many
+  to: IntentBinding
+  via: agent_id
+- from: Agent
+  rel: has_many
+  to: MediaCertificate
+  via: agent_id
+- from: Agent
+  rel: has_many
+  to: MPPSession
+  via: agent_id
+- from: Operator / ApiKey
+  rel: has_one
+  to: Agent
+  via: SignupRequest.agent_id
+- from: Verification
+  rel: has_one
+  to: ReleaseToken
+  via: release_token (ALLOW/CONSTRAIN only)
+- from: Verification
+  rel: belongs_to
+  to: Attestation
+  via: provenance_hash / hash_prev (chain position)
+- from: Attestation
+  rel: belongs_to
+  to: Attestation
+  via: prior_attestation_hash (append-only chain)
+- from: IntentBinding
+  rel: belongs_to
+  to: IntentBinding
+  via: parent_intent_id
+- from: OutcomeVerification
+  rel: belongs_to
+  to: IntentBinding
+  via: intent_id + binding_id
+- from: ComplianceBundle
+  rel: has_many
+  to: Attestation
+  via: agent_id + time_range
+- from: ComplianceBundle
+  rel: has_many
+  to: IntentBinding
+  via: include_intent_chains
+- from: MediaCertificate
+  rel: has_many
+  to: MediaCertificate lifecycle events
+  via: certificate_id (approve/revoke/status)
+- from: MPPSession
+  rel: has_many
+  to: MPP heartbeats
+  via: session id
+- from: Verification
+  rel: has_one
+  to: PaymentQuote
+  via: x-payment-info per operation (price of the evaluation)

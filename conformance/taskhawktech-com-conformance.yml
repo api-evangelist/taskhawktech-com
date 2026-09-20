@@ -1,0 +1,145 @@
+generated: '2026-09-19'
+method: searched
+source: Live responses from governance.taskhawktech.com (402 challenge bodies and headers, /.well-known/* documents,
+  MCP initialize), the OpenAPI (openapi/taskhawktech-com-openapi.yml), and provider pages https://taskhawktech.com/legal/security,
+  /artifacts, /legal/accessibility, /company — 2026-09-19.
+standards:
+- id: rfc9457
+  conforms: true
+  evidence: 'Live: POST https://governance.taskhawktech.com/governance/verify without credentials returns 402 with
+    content-type application/problem+json and a body carrying type (https://paymentauth.org/problems/payment-required),
+    title, status and detail. The OpenAPI itself does not declare the media type — the 402 response has a description
+    only — so this is observed behaviour, not contract.'
+- id: rfc8414
+  conforms: true
+  evidence: 'https://governance.taskhawktech.com/.well-known/oauth-authorization-server (200): issuer, authorization_endpoint,
+    token_endpoint, jwks_uri, grant_types_supported, scopes_supported, ES256. Saved to well-known/. The OpenAPI
+    declares no oauth2 scheme, so the OAuth surface is published outside the contract.'
+- id: oauth2
+  conforms: true
+  evidence: RFC 8414 metadata advertises authorization_code, client_credentials and urn:ietf:params:oauth:grant-type:jwt-bearer
+    grants with seven governance:* scopes; /oauth/authorize (400) and /oauth/token (405 on GET) exist. See scopes/taskhawktech-com-scopes.yml.
+- id: rfc9728
+  conforms: false
+  evidence: https://governance.taskhawktech.com/.well-known/oauth-protected-resource → 404; /mcp/.well-known/oauth-protected-resource
+    is answered by the MCP catch-all, not a metadata document.
+- id: oidc
+  conforms: false
+  evidence: /.well-known/openid-configuration → 404 on every host.
+- id: rfc9116
+  conforms: true
+  evidence: security.txt served on taskhawktech.com, www and governance.taskhawktech.com with Contact, Expires (2027-05-01),
+    Canonical, Policy, Preferred-Languages.
+- id: rfc7517-jwks
+  conforms: true
+  evidence: https://governance.taskhawktech.com/.well-known/jwks.json serves one EC P-256 ES256 key.
+- id: x402
+  conforms: true
+  evidence: 'Live 402 on POST /governance/verify carries PAYMENT-REQUIRED (x402Version 2, accepts[] scheme exact,
+    network eip155:8453, USDC and USDT on Base, facilitator https://facilitator.payai.network) and WWW-Authenticate:
+    x402. The agent card declares the x402 extension (https://www.x402.org, role merchant). The advertised /.well-known/x402
+    discovery document 404s.'
+- id: l402
+  conforms: true
+  evidence: 'Live WWW-Authenticate: L402 macaroon=… token=… invoice=lnbc150n… on POST /governance/verify; /.well-known/l402
+    discovery document served (dual macaroon format, 15 sats for verify).'
+- id: mpp-paymentauth
+  conforms: true
+  evidence: 'Live WWW-Authenticate: Payment id=… realm=… method="stripe" intent="charge" challenge and /.well-known/mpp
+    discovery (spec https://paymentauth.org, minimum 50 usd_cents).'
+- id: mcp
+  conforms: true
+  evidence: https://governance.taskhawktech.com/mcp/ initialize returns protocolVersion 2025-03-26 with serverInfo
+    kevros-governance-api 0.4.1; tools/list, resources/list, prompts/list answer. MCP Registry server.json (schema
+    2025-12-11) at the root.
+- id: a2a
+  conforms: true
+  grade: near-conformant
+  evidence: Agent card at /.well-known/agent-card.json (and legacy agent.json) passes the three A2A hard checks;
+    no defaultInput/OutputModes or transport binding. See a2a/taskhawktech-com-a2a.yml.
+- id: idempotency
+  conforms: true
+  coverage: partial
+  evidence: VerifyRequest.idempotency_key ("Idempotency key for retry safety") on verify-action only; AttestRequest/BindIntentRequest/VerifyRequest
+    carry cmd_id replay protection. No Idempotency-Key header, no coverage on media/MPP/shield writes. See conventions/.
+- id: pagination
+  conforms: false
+  evidence: No list/collection operations in the contract; nothing to paginate. Not applicable rather than a defect.
+- id: delegation-http-auth-draft
+  conforms: true
+  evidence: https://governance.taskhawktech.com/.well-known/delegation-authority and /delegation-issuer-keys implement
+    draft-mcgraw-httpapi-agent-budget-03 (an individual Internet-Draft authored by TaskHawk's founder; the documents
+    themselves state no IETF WG adoption). Live for-agents.txt documents the 401/403 Delegation challenge. Not a
+    ratified standard.
+- id: fips-204-ml-dsa
+  conforms: true
+  claim: true
+  evidence: 'Provider claim, not independently verified: /legal/security, the agent card metadata.post_quantum and
+    delegation-issuer-keys (alg ML-DSA-65/-87, COSE ids -49/-50 per RFC 9964) state ML-DSA-87 signing of release
+    tokens / X-Kevros-KGA attestations; public key published at /.well-known/mpp/pubkey.'
+- id: fips-205-slh-dsa
+  conforms: true
+  claim: true
+  evidence: 'Provider claim: SLH-DSA-SHA2-256f named on /legal/security and as settlement_rail_signature_required
+    in delegation-authority metadata.'
+- id: cmmc-level-2
+  conforms: false
+  claim: self-assessment
+  evidence: 'https://taskhawktech.com/artifacts: "TaskHawk maintains self-assessment material for CMMC Level 2 and
+    NIST SP 800-171 review … No C3PAO or third-party certification is implied." SSP available on request via contracts@taskhawktech.com.
+    Recorded as a published compliance program, not a certification.'
+- id: nist-sp-800-171
+  conforms: false
+  claim: self-assessment
+  evidence: Same /artifacts statement; SPRS score context "available through qualified review".
+- id: nist-ai-rmf
+  conforms: true
+  claim: true
+  evidence: https://taskhawktech.com/legal/privacy "Runtime Enforcement Data Processing" maps the pipeline to the
+    NIST AI RMF GOVERN/MAP/MEASURE/MANAGE functions. Alignment statement, not a certification.
+- id: wcag-2.1-aa
+  conforms: false
+  claim: target
+  evidence: https://taskhawktech.com/legal/accessibility states the public website is designed and reviewed "against
+    WCAG 2.1 AA principles where applicable"; no conformance report / VPAT is published (/accessibility/vpat 404).
+- id: soc2
+  conforms: false
+  evidence: No SOC 2, ISO 27001, PCI or FedRAMP claim anywhere on the public surface; /legal/security says the design
+    is "architected to support independent security review". probe-security-programs.py found no trust center.
+domain_standards:
+- id: eu-ai-act-risk-classification
+  declared_in_contract: true
+  evidence: openapi components.schemas.RiskCategory enum [MINIMAL, LIMITED, HIGH, UNACCEPTABLE], referenced by VerifyRequest.risk_category
+    and AttestRequest.risk_category — described in the spec as "EU AI Act risk classification … recorded in provenance
+    for regulatory compliance tagging". The contract carries the regulation's own taxonomy as a typed field.
+- id: x402
+  declared_in_contract: true
+  evidence: Agent card securitySchemes.x402 + capabilities.extensions[uri https://www.x402.org]; OpenAPI x-payment-info
+    on every priced operation; live x402 v2 challenge.
+- id: mcp
+  declared_in_contract: true
+  evidence: MCP Registry server.json at the root; live 2025-03-26 server.
+- id: a2a
+  declared_in_contract: true
+  evidence: Agent card served at the A2A well-known path.
+- id: c2pa
+  declared_in_contract: true
+  partial: true
+  evidence: openapi MediaAttestRequest.c2pa_manifest_hash and /media/capabilities supports_c2pa_manifest_hash true
+    / supports_c2pa_validation false — the contract accepts a C2PA manifest hash but explicitly does not validate
+    C2PA.
+compliance_program:
+  published: true
+  certifications: []
+  self_assessments:
+  - CMMC Level 2 (SSP on request)
+  - NIST SP 800-171
+  registrations:
+  - SAM.gov active, CAGE 10YV4, UEI RZCQRY4J5GV3
+  - 'Virginia SWaM Small/Micro #839661 (through 2031-01-06)'
+  - MWAA SLBE SL21672773 (through 2028-09-25)
+  export_control: EAR — cryptographic software; classification in progress per discovery documents; US-only geofence
+  source:
+  - https://taskhawktech.com/artifacts
+  - https://taskhawktech.com/company
+  - https://taskhawktech.com/legal/terms

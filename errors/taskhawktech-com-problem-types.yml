@@ -1,0 +1,123 @@
+generated: '2026-09-19'
+method: derived
+format: mixed (rfc9457 for payment challenges; FastAPI HTTPValidationError for 422)
+source: Derived from the 4xx responses declared in openapi/taskhawktech-com-openapi.yml (402, 422, 400, 404) and
+  enriched from LIVE responses observed 2026-09-19 (402 problem+json body and WWW-Authenticate headers on POST /governance/verify;
+  405 on GET /governance/verify-token; JSON 404 {"detail":"Not Found"}) plus the Delegation challenge documented
+  in for-agents.txt. No error reference page exists; /api is a Scalar render of the same OpenAPI.
+envelope:
+  payment_challenge:
+    status: 402
+    media_type: application/problem+json
+    shape: '{ type, title, status, detail, challengeId, x402Version, error, discovery_url, health_url, pricing_fingerprint,
+      docs_url, free_tier{signup,method,body,included_calls}, mpp{...}, accepts[], resource{}, authority_boundary{}
+      }'
+    type_uri: https://paymentauth.org/problems/payment-required
+    headers:
+    - 'WWW-Authenticate: L402 macaroon=… token=… invoice=…'
+    - 'WWW-Authenticate: Payment id=… realm=… method="stripe" intent="charge" request=… expires=…'
+    - 'WWW-Authenticate: x402 scheme="exact" network="eip155:8453" asset=… payTo=… amount=… resource=… facilitator=…'
+    - 'PAYMENT-REQUIRED: <base64 x402 v2 requirements>'
+    - 'Delegation-Version: 1'
+    - 'X-Kevros-Access-Flow: rail-priority-self-serve'
+    - 'Cache-Control: no-store'
+  validation:
+    status: 422
+    media_type: application/json
+    shape: '{ "detail": [ { "loc": [string|int], "msg": string, "type": string, "input"?: any, "ctx"?: object }
+      ] }'
+    schema: components.schemas.HTTPValidationError → ValidationError
+  not_found:
+    status: 404
+    media_type: application/json
+    shape: '{ "detail": "Not Found" }  (observed live)'
+problems:
+- status: 400
+  title: Invalid endpoint parameter
+  operations:
+  - getPaymentQuote
+  meaning: The endpoint query parameter is malformed.
+  remediation: Pass a path such as /governance/verify.
+- status: 401
+  title: Delegation challenge (governed execution)
+  operations:
+  - verify-action
+  - attest-action
+  - bind-intent
+  - generate-bundle
+  - shield-scan
+  - mpp-create-session
+  meaning: 'Governed/high-authority execution without X-API-Key or Delegation proof. Documented in for-agents.txt
+    as HTTP 401 or 403 with WWW-Authenticate: Delegation … nonce, max-age=300, rails="mpp x402 l402". NOT declared
+    in the OpenAPI.'
+  remediation: 'Retry with Authorization: Delegation <token>, Delegation-Proof: :<cose>:, JSON delegation_proof,
+    or an X-API-Key from POST /signup.'
+  source: llms/taskhawktech-com-for-agents.txt
+- status: 402
+  title: Payment Required
+  operations:
+  - verify-action
+  - attest-action
+  - bind-intent
+  - generate-bundle
+  - shield-scan
+  - attest_media_media_attest_post
+  - mpp-create-session
+  meaning: Priced self-serve endpoint called without a rail credential or API key. The body is an RFC 9457 problem
+    that also carries every rail challenge. ALLOW, CONSTRAIN and DENY are all paid evaluations — payment buys the
+    evaluation, never an ALLOW.
+  remediation: 'Either POST /signup for a trial X-API-Key, or pay one advertised, enabled rail (re-fetch /payment/discovery
+    first) and retry with Authorization: L402 <macaroon>:<preimage>, PAYMENT-SIGNATURE / X-PAYMENT (x402) or Authorization:
+    Payment <credential> (MPP).'
+  observed_live: true
+- status: 403
+  title: Delegation / authority refusal
+  operations:
+  - approve_media_certificate_media_approve__certificate_id__post
+  - revoke_media_certificate_media_revoke__certificate_id__post
+  meaning: Media lifecycle mutation requires an X-API-Key bound to the certificate's agent_id or an internal admin
+    key; paid rail credentials are explicitly refused (x-authority-info accepts_paid_rail false). Also one of the
+    two governed-execution challenge statuses.
+  remediation: Use the operator key that issued the certificate. Do not send x402/L402/MPP credentials to lifecycle
+    endpoints.
+- status: 404
+  title: Not Found
+  operations:
+  - getPaymentQuote
+  - media_certificate_status_media_status__certificate_id__get
+  - lookup_certificate_media_verify__certificate_id__get
+  meaning: 'On /payment/quote: "Endpoint is not priced (free or unknown)". On media lookups: unknown certificate_id.
+    Live 404s are JSON {"detail":"Not Found"}.'
+- status: 405
+  title: Method Not Allowed
+  operations: []
+  meaning: Observed on GET /governance/verify-token and GET /oauth/token — POST-only routes that exist outside the
+    OpenAPI.
+  observed_live: true
+- status: 422
+  title: Validation Error
+  operations: every operation with a requestBody or path/query parameter (20 of 23)
+  meaning: Request failed Pydantic validation; detail[] lists loc/msg/type per field.
+  remediation: Fix the named field; required fields for verify are action_type, action_payload, agent_id.
+- status: 429
+  title: Rate limited (undocumented status)
+  operations: []
+  meaning: A 10 req/min trial rate limit and a 1,000 calls/month allowance are published (SignupResponse defaults,
+    agent card free_tier), but no 429 response, Retry-After or RateLimit-* header is documented anywhere. Recorded
+    as a gap, not observed.
+  remediation: null
+- status: 503
+  title: Service Unavailable
+  operations: []
+  meaning: Observed live on GET /protocol/427/health (the Delegation protocol health route named by for-agents.txt
+    and the agent card) — empty body.
+  observed_live: true
+decision_semantics:
+  note: 'A DENY is NOT an error: it is a 200 with decision DENY, a reason, a provenance_hash and no release_token.
+    Fail-closed means any verification failure yields DENY. enforcement_mode advisory returns the would-be decision
+    in advisory_decision without enforcing.'
+  decision_enum:
+  - ALLOW
+  - CONSTRAIN
+  - DENY
+  wire_alias: CONSTRAIN may appear as the legacy value CLAMP (MCP tool description; PyPI SDK README).

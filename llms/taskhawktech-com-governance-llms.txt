@@ -1,0 +1,91 @@
+# Kevros Governance API
+> Verify AI agent actions, record hash-chained provenance, bind intents cryptographically.
+
+## API
+- Base URL: https://governance.taskhawktech.com
+- Auth: X-API-Key header (get trial key: POST /signup with {"agent_id":"your-id"})
+- Docs: /openapi.json
+- MCP: /mcp/ (streamable-http transport)
+
+## Endpoints
+- POST /governance/verify - ALLOW/CONSTRAIN/DENY decision ($0.01)
+- POST /governance/attest - Hash-chained provenance record ($0.02)
+- POST /governance/bind - Cryptographic intent binding ($0.02)
+- POST /governance/bundle - Compliance evidence package ($0.05)
+- POST /shield/scan - Threat detection ($0.01)
+- POST /media/attest - Media authority certificate issuance ($0.05)
+- POST /media/verify - Free media hash verification
+- GET /media/verify/{certificate_id} - Free certificate lookup; returns JSON or human HTML by Accept header
+- GET /media/status/{certificate_id} - Free public lifecycle status
+- GET /media/capabilities - Free machine-readable media authority contract
+- POST /media/approve/{certificate_id} - Operator API key only; not a settlement rail
+- POST /media/revoke/{certificate_id} - Operator API key only; not a settlement rail
+- POST /signup - Trial API key (1,000 calls/month, no credit card)
+
+## Payment
+- Trial allowance: 1,000 calls/month (POST /signup)
+- x402: USDC on Base; Solana and other networks are not advertised until endpoint-level resources/pricing and compliance gates ship
+- L402: Lightning Network; live sats pricing is returned by /payment/discovery and /.well-known/l402
+- MPP: processor-backed machine payment sessions when live discovery marks the rail enabled.
+
+## Access and Compliance
+- Public discovery endpoints are read-only metadata.
+- Priced self-serve endpoints return 402 before execution and accept verified x402, L402, MPP, or Stripe stablecoin credentials on retry.
+- Governed or high-authority execution requires X-API-Key or verified Delegation proof.
+- Access is subject to United States sanctions, restricted-party, export-control, prohibited-end-use, wallet, payment, and account-abuse screening.
+- Public discovery endpoints do not expose ITAR, CUI, federal proposal, customer, partner-confidential, private-key, or classified technical data.
+
+## Active vs Pending Payment Rails (machine-discoverable)
+- Candidate rails; use only when discovery marks enabled=true: x402, l402, mpp
+- Disabled rail slot: x402-solana until endpoint-level Solana resources/pricing are emitted
+- Pending rails (do NOT select): tempo
+- Authoritative challenge-configuration status: GET /payment/discovery (health.rails[].enabled), GET /payment/health
+- Rail selection guidance:
+  1. GET /payment/discovery (cache 30s via ETag) for rail challenge configuration + per-endpoint pricing.
+  2. Use only rails where enabled=true. For priced self-serve endpoints, POST once to receive 402, pay on a supported rail, then retry with the rail credential.
+  3. Prefer per-endpoint recommended_rail from /payment/discovery.
+  4. Fallback order on failure: x402 -> l402 -> mpp. Re-fetch /payment/discovery if pricing_fingerprint changes.
+  5. Fail-closed: if discovery is unreachable, do NOT invent rails; surface the error.
+
+## Media Authority Boundary
+- Paid issuance: POST /media/attest.
+- Free verification/discovery: POST /media/verify, GET /media/verify/{certificate_id}, GET /media/status/{certificate_id}, GET /media/capabilities.
+- Operator lifecycle mutation: POST /media/approve/{certificate_id}, POST /media/revoke/{certificate_id}. These require X-API-Key bound to the certificate agent_id or an internal admin key; x402, L402, and MPP do not authorize lifecycle mutation.
+- Certificate claims: integrity hash, provenance-chain position, lifecycle status, approval status, and asserted C2PA/campaign/rights/consent/model/policy layers.
+- Negative claims: not a standalone deepfake detector, legal rights clearance, subject-consent determination, or C2PA validator unless the relevant layer is explicitly present and verified.
+
+## Delegation Authority (bounded-authority proof)
+- Spec target: draft-mcgraw-httpapi-agent-budget-03, "The Delegation HTTP Authentication Scheme for Request-Bound Authority"; published 2026-07-23 as an active individual Internet-Draft. No IETF working-group adoption or standards approval is claimed. Version-pinned reference: https://datatracker.ietf.org/doc/html/draft-mcgraw-httpapi-agent-budget-03
+- Discovery: /.well-known/delegation-authority
+- Issuer keys: /.well-known/delegation-issuer-keys
+- Registration: POST /v1/operators/register (BYOK v1 - operator holds signing keys)
+- Proof issuance: POST /v1/attestations/issue
+- Protected request cycle: 401/403 Delegation challenge -> Authorization: Delegation, Delegation-Proof, JSON delegation_proof, or body-carried COSE proof -> optional settlement-rail challenge -> protected request processing
+- Version handling: unsupported proof versions fail closed on the Delegation challenge surface. No separate upgrade-status negotiation path is advertised.
+- PQC envelope: ML-DSA-87 (FIPS 204 / JOSE+COSE RFC 9964); optional body-carried SLH-DSA-SHA2-256f on high-assurance settlement rails (x402, mpp)
+- SDK types: https://governance.taskhawktech.com/developers/sdk/
+
+## Well-Known Endpoints (agent protocol discovery)
+- /.well-known/agent-card.json - A2A Agent Card (current path)
+- /.well-known/agent.json - A2A Agent Card (legacy-compatible alias)
+- /server.json - MCP server manifest
+- /.well-known/delegation-authority - Delegation authority metadata (BYOK v1)
+- /.well-known/delegation-issuer-keys - Delegation issuer key metadata
+- /.well-known/x402 - x402 payment parameters
+- /.well-known/l402 - L402 payment parameters
+- /.well-known/mpp - MPP Stripe payment parameters
+- /payment/discovery - canonical rail configuration, pricing, and access flow
+- /payment/health - health-only rail configuration status
+- /.well-known/security.txt - Security contact and disclosure policy
+
+## Integration
+- HTTP API: see Endpoints above (X-API-Key auth)
+- MCP: {"mcpServers":{"kevros":{"url":"https://governance.taskhawktech.com/mcp/"}}}
+- MCP server manifest: /server.json
+- Agent card: /.well-known/agent-card.json (alias: /.well-known/agent.json)
+- First-party SDK: contract-gated; contact sales@taskhawktech.com
+
+## Trust
+- Formally verified: 1.94 billion states, 12 safety invariants, zero violations (TLA+)
+- Post-quantum signed evidence blocks: ML-DSA-87 (FIPS 204)
+- Hash-chained provenance: append-only, independently verifiable

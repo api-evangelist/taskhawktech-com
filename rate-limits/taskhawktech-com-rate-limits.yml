@@ -1,0 +1,41 @@
+generated: '2026-09-19'
+method: searched
+source: https://governance.taskhawktech.com/openapi.json (SignupResponse.rate_limit_per_minute default 10, monthly_limit
+  default 1000; tags[shield].description), https://governance.taskhawktech.com/.well-known/agent-card.json free_tier.rate_limit_per_minute,
+  https://taskhawktech.com/legal/security ("Operator-scoped API keys with per-key rate limiting and usage tracking"),
+  MPPSessionRequest.spending_rate_limit_cents_per_minute — 2026-09-19.
+docs: https://governance.taskhawktech.com/api
+limit_count: 3
+limits:
+- name: Trial key request rate
+  scope: per-key
+  window: minute
+  limit: 10
+  burst: null
+  source: SignupResponse.rate_limit_per_minute default; agent card free_tier.rate_limit_per_minute
+- name: Trial key monthly allowance
+  scope: per-key
+  window: month
+  limit: 1000
+  burst: null
+  source: SignupResponse.monthly_limit default; "1,000-call trial allowance" in tags[signup] and ApiKeyAuth description
+- name: Shield scan-free trial
+  scope: per-IP
+  window: day
+  limit: 10
+  burst: null
+  source: 'tags[shield].description: "Trial allowance: 10 scans/day per IP"; agent card pricing shield_scan_free
+    "free (10/day)"'
+headers:
+  documented: []
+  note: No X-RateLimit-*, RateLimit-* or Retry-After header is documented in the OpenAPI, for-agents.txt or llms.txt.
+    Live responses expose PAYMENT-REQUIRED, WWW-Authenticate, X-Kevros-Version and X-Payment-Error only.
+response_codes:
+  throttled: null
+  note: The exhaustion status is not documented (no 429 in any operation). The MCP status tool reports calls used/remaining,
+    tier and rate limits — the only published runtime signal for quota.
+per_key_enforcement: Operator-scoped keys with per-key rate limiting and usage tracking (legal/security IAM section);
+  contracted keys presumably carry different limits, not published.
+spend_limits:
+  mpp_session: spending_rate_limit_cents_per_minute + session_budget_cents + duration_seconds per governed MPP session
+    (client-declared, server-enforced)

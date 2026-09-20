@@ -1,0 +1,74 @@
+generated: '2026-09-19'
+method: searched
+source: https://pypi.org/pypi/kevros/json, https://pypi.org/pypi/kevros-agent-framework/json, https://governance.taskhawktech.com/server.json,
+  https://api.github.com/orgs/taskhawk-systems/repos, registry.npmjs.org, crates.io, rubygems.org, nuget.org, proxy.golang.org
+  — all queried 2026-09-19.
+description: First-party client libraries for the Kevros Governance API. Two PyPI packages are first-party (their
+  project_urls point at governance.taskhawktech.com and taskhawktech.com). npm, crates.io, RubyGems, NuGet and Go
+  module proxy hold nothing under kevros/taskhawk names. The PyPI package `taskhawk` (Automatic Labs / cloudchacho)
+  is an UNRELATED project and is deliberately excluded. The GitHub organization taskhawk-systems exists but has
+  0 public repositories; the kevros-formal-verification and kevros repos linked from the /artifacts page and PyPI
+  metadata both 404.
+packages:
+- language: python
+  registry: pypi
+  name: kevros
+  url: https://pypi.org/project/kevros/
+  source: https://github.com/taskhawk-systems/kevros (404 — repository is not public)
+  install: pip install kevros
+  official: true
+  version: 0.3.12
+  published: '2026-04-04'
+  license: Other/Proprietary License
+  python: '>=3.9'
+  extras:
+  - langchain
+  - mcp
+  note: 'Python SDK (GovernanceClient) for verify/attest/bind/bundle/scan/media-attest/batch; auto-signs up for
+    a trial key on first use. CURRENCY DRIFT: the provider''s MCP Registry server.json (2026-09-19) declares this
+    package at version 0.4.0 with a stdio transport, and the gateway reports version 0.4.1, but PyPI''s newest release
+    is 0.3.12 from 2026-04-04 — the SDK is 5+ months and two minor versions behind the API it wraps. Its README
+    also still documents ALLOW/CLAMP/DENY and retired subscription tiers ($29/$149/$499).'
+- language: python
+  registry: pypi
+  name: kevros-agent-framework
+  url: https://pypi.org/project/kevros-agent-framework/
+  source: null
+  install: pip install kevros-agent-framework
+  official: true
+  version: 0.1.5
+  published: '2026-03-23'
+  license: null
+  note: Governance middleware for Microsoft Agent Framework / AutoGen / Semantic Kernel (KevrosMiddleware, KevrosFilter).
+    Requires agent-framework>=1.0.0b251001. Last release 2026-03-23.
+not_found:
+- registry: npm
+  queried:
+  - kevros
+  - '@kevros/sdk'
+  - '@taskhawk/kevros'
+  - kevros-sdk
+  - kevros-agent-framework
+  - '@taskhawk-systems/kevros'
+  - search?text=kevros
+  result: 404 / empty
+- registry: crates.io
+  queried:
+  - kevros
+  result: 403 (registry front-end); no crate surfaced
+- registry: rubygems
+  queried:
+  - kevros
+  result: '404'
+- registry: nuget
+  queried:
+  - kevros
+  result: empty
+- registry: proxy.golang.org
+  queried:
+  - github.com/taskhawk-systems/kevros
+  result: '404'
+claimed_but_unverified:
+- The agent card sdks block names kevros_tools (LangChain), kevros_openai and crewai_tools import paths; no registry
+  package publishes those modules under a TaskHawk-owned name, and the agent card itself says the first-party CLI
+  is contract-gated (sales@taskhawktech.com).

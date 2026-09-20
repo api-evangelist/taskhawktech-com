@@ -1,0 +1,300 @@
+generated: '2026-09-19'
+method: probed
+source: https://governance.taskhawktech.com/.well-known/agent-card.json
+card:
+  file: a2a/taskhawktech-com-agent-card.json
+discovery:
+  path: /.well-known/agent-card.json
+  canonical: true
+  host: governance.taskhawktech.com
+  legacy_alias:
+    path: /.well-known/agent.json
+    status: 200
+    identical: true
+  note: 'The card is served from the API/MCP host, not the company apex: taskhawktech.com and www.taskhawktech.com
+    return a real 404 for both card paths, and connect.taskhawktech.com returns {"detail":"Not Found"}. Ownership
+    is settled by the card itself — provider.organization "TaskHawk Systems", provider.url https://www.taskhawktech.com,
+    url https://governance.taskhawktech.com (the same host that serves the OpenAPI whose servers[] and info.contact
+    name TaskHawk), and the company''s own llms.txt, for-agents.txt and openapi.json description all point at this
+    exact document. The repo''s harvest source was an A2A registry, which this probe confirms.'
+x-evidence:
+  fetched: '2026-09-19'
+  url: https://governance.taskhawktech.com/.well-known/agent-card.json
+  http_status: 200
+  content_type: application/json
+  body_bytes: 24786
+  cache_control: public, max-age=3600
+  body_parses_as: JSON object with AgentCard shape (name, url, version, protocolVersion, capabilities object, skills
+    array, securitySchemes, security)
+  corroborating_probes:
+  - url: https://governance.taskhawktech.com/.well-known/agent.json
+    http_status: 200
+    note: byte-identical legacy alias
+  - url: https://taskhawktech.com/.well-known/agent-card.json
+    http_status: 404
+  - url: https://taskhawktech.com/.well-known/agent.json
+    http_status: 404
+  - url: https://connect.taskhawktech.com/.well-known/agent-card.json
+    http_status: 404
+  - url: https://governance.taskhawktech.com/mcp/
+    http_status: 200
+    note: MCP tools/list, resources/list and prompts/list answer anonymously; the card's mcp.url is a live agent
+      surface, and the MCP server also exposes the card as resource kevros://agent-card.
+  - url: https://governance.taskhawktech.com/governance/verify-token
+    http_status: 405
+    note: GET on the card's verification.endpoints.verify_token returns 405 — the POST endpoint exists but is absent
+      from the OpenAPI.
+  - url: https://governance.taskhawktech.com/governance/reputation/test-agent
+    http_status: 404
+    note: Card's public reputation lookup answers a JSON 404 for an unknown agent_id — route exists, not in the
+      OpenAPI.
+agent_card:
+  name: Kevros Governance API
+  description: Runtime enforcement for autonomous agents. Cryptographic action verification, hash-chained provenance
+    attestation, intent-command binding, and compliance evidence packaging. Every decision is recorded in a tamper-evident
+    ledger. Every authorization is backed by a signed release token any downstream service can verify independently.
+  version: 0.4.1
+  product_release_version: 4.6.3
+  protocol_version: 0.2.6
+  url: https://governance.taskhawktech.com
+  provider:
+    organization: TaskHawk Systems
+    url: https://www.taskhawktech.com
+  capabilities:
+    streaming: false
+    push_notifications: false
+    tags:
+    - runtime-enforcement
+    - provenance
+    - compliance
+    - media
+    - security
+    - prompt-injection
+    extensions:
+    - uri: https://www.x402.org
+      required: true
+      roles:
+      - merchant
+  security_schemes:
+    apiKey:
+      type: apiKey
+      scheme: null
+      in: header
+      name: X-API-Key
+    x402:
+      type: http
+      scheme: bearer
+      in: null
+      name: null
+    l402:
+      type: http
+      scheme: L402
+      in: null
+      name: null
+    mpp:
+      type: http
+      scheme: Payment
+      in: null
+      name: null
+  security:
+  - apiKey: []
+  - x402: []
+  - l402: []
+  - mpp: []
+  skill_count: 11
+  skills:
+  - id: action-verify
+    name: Action Verification
+    description: 'Verify an action against policy bounds before execution. Returns ALLOW, CONSTRAIN, or DENY with
+      a signed release token. Downstream services verify the token independently. Fail-closed: verification failure
+      results in DENY.'
+    input_modes:
+    - application/json
+    output_modes:
+    - application/json
+  - id: provenance-attest
+    name: Provenance Attestation
+    description: Record an action in a hash-chained, append-only evidence ledger. Each attestation extends the provenance
+      chain. Block signatures issued every 100 records using ML-DSA-87 (FIPS 204). Third parties verify the chain
+      without Kevros access.
+    input_modes:
+    - application/json
+    output_modes:
+    - application/json
+  - id: intent-bind
+    name: Intent Binding
+    description: Bind a declared intent to a command and verify the outcome matches. HMAC-signed binding proves
+      the chain from intent to command to result is unbroken.
+    input_modes:
+    - application/json
+    output_modes:
+    - application/json
+  - id: trust-certificate
+    name: Compliance Bundle
+    description: Generate a portable compliance evidence package containing hash-chained provenance, intent binding
+      proofs, post-quantum block signatures, and verification instructions. Independently verifiable without Kevros
+      access.
+    input_modes:
+    - application/json
+    output_modes:
+    - application/json
+  - id: media-attest
+    name: Media Hash Attestation
+    description: Submit a media file hash for cryptographic attestation. Returns a signed certificate proving the
+      hash was recorded at a specific timestamp in the provenance ledger. Useful for content provenance, media integrity,
+      and audit trails.
+    input_modes:
+    - application/json
+    output_modes:
+    - application/json
+  - id: media-verify
+    name: Media Hash Verification
+    description: Verify a media file hash against a previously issued attestation certificate. Returns the attestation
+      status and certificate details. No charge, no authentication required.
+    input_modes:
+    - application/json
+    output_modes:
+    - application/json
+  - id: media-verify-lookup
+    name: Media Certificate Lookup
+    description: Look up a media attestation certificate by its certificate ID. Returns the full certificate including
+      hash, timestamp, and provenance chain position. No charge, no authentication required.
+    input_modes:
+    - application/json
+    output_modes:
+    - application/json
+  - id: shield-scan
+    name: Prompt Injection Detection
+    description: Prompt injection detection via ONNX DeBERTa-v3 classifier. Scans text for injection attacks, jailbreaks,
+      and role hijacking attempts. Returns confidence score, risk level, and HMAC-signed result. $0.01/scan or 10
+      trial scans/day.
+    input_modes:
+    - application/json
+    output_modes:
+    - application/json
+  - id: mpp-session
+    name: MPP Session Create
+    description: Create a governed streaming payment session. Declare budget, duration, spending rate limit, and
+      allowed service categories. Returns a signed session token for continuous streaming payments within policy
+      bounds. Every session is recorded in the provenance ledger. $0.02/session. POST /governance/mpp/session
+    input_modes:
+    - application/json
+    output_modes:
+    - application/json
+  - id: mpp-heartbeat
+    name: MPP Session Heartbeat
+    description: Mid-session drift check during a streaming payment session. Reports current spend, transaction
+      count, active service, and spending rate. Kevros checks for budget overruns, rate limit violations, and unauthorized
+      service usage. Returns session status (active, warning, suspended, expired) and remaining budget/time. No
+      charge. POST /governance/mpp/heartbeat
+    input_modes:
+    - application/json
+    output_modes:
+    - application/json
+  - id: mpp-close
+    name: MPP Session Close
+    description: Close a streaming payment session and seal the provenance record. Reports final spend, transaction
+      count, and close reason. Returns sealed provenance hash and compliance bundle availability. No charge. POST
+      /governance/mpp/close
+    input_modes:
+    - application/json
+    output_modes:
+    - application/json
+  non_standard_top_level_keys:
+  - product_release_version
+  - availability
+  - compliance_access_policy
+  - identity
+  - payment
+  - authentication
+  - free_tier
+  - sdks
+  - verification
+  - mcp
+  - pricing
+  - discovery
+  - delegation_authority
+  - agent_authority
+  - metadata
+  - media_authority
+  availability:
+    regions:
+    - US
+    geofence: US-only
+    international_sales: direct-agreement-after-review
+    export_control: EAR-classification-in-progress
+    restricted_access: sanctions, denied-party, prohibited-end-use, and abuse screening required before paid or
+      executable access
+    effective_from: '2026-04-19'
+  mcp:
+    transport: streamable-http
+    url: https://governance.taskhawktech.com/mcp/
+    auth_header: X-API-Key
+    note: Use MCP discovery (tools/list, resources/list, prompts/list) for current counts
+  free_tier:
+    signup_url: https://governance.taskhawktech.com/signup
+    method: POST
+    body:
+      agent_id: your-agent-id
+    included_calls: 1000
+    rate_limit_per_minute: 10
+    auto_signup: SDKs and MCP auto-provision a trial key on first use.
+conformance:
+  spec: A2A 1.0.0
+  grade: near-conformant
+  protocol_version: 0.2.6
+  preferred_transport: null
+  transport: not declared (no preferredTransport, no supportedInterfaces[]); url is the REST gateway root
+  hard_checks:
+    capabilities_is_object: true
+    protocol_version_present: true
+    skills_is_array: true
+  optional_fields:
+    default_input_modes: false
+    default_output_modes: false
+    preferred_transport: false
+  grade_basis: 'All three hard checks pass: capabilities is an OBJECT (streaming, pushNotifications, tags, extensions),
+    protocolVersion is present ("0.2.6"), and skills is an ARRAY of 11 populated skills each carrying id, name,
+    description, inputModes and outputModes. None of the optional discriminators are present — no defaultInputModes,
+    no defaultOutputModes, no preferredTransport — so the card is near-conformant rather than conformant. It is
+    a 0.2.x-era card shape (flat top-level url + protocolVersion, OpenAPI-style flat securitySchemes) rather than
+    the 1.0 supportedInterfaces[] shape, and it declares no A2A JSON-RPC/gRPC/HTTP+JSON binding at all: url is the
+    REST gateway root, and the executable surfaces the card actually points at are the REST OpenAPI and the MCP
+    endpoint. It is best read as a rich provider descriptor published at the A2A well-known path.'
+  deviations:
+  - field: protocolVersion
+    observed: '"0.2.6"'
+    note: Declares a pre-0.3 protocol version; A2A 1.0.0 readers expecting supportedInterfaces[].protocolVersion
+      find none.
+  - field: url / supportedInterfaces / preferredTransport
+    observed: url = https://governance.taskhawktech.com; no supportedInterfaces, no preferredTransport
+    note: No A2A task/message endpoint is declared. An A2A client has nothing to POST a message/send to; the reachable
+      agent surfaces are the REST OpenAPI and MCP at /mcp/ (both declared in non-standard keys discovery.* and mcp.*).
+  - field: defaultInputModes / defaultOutputModes
+    observed: absent
+    note: Per-skill inputModes/outputModes are present (application/json), but the card-level defaults A2A expects
+      are not.
+  - field: skills[].tags
+    observed: absent on all 11 skills
+    note: A2A skills carry a tags[] array; none of these do (tags appear only at capabilities.tags).
+  - field: securitySchemes.l402 / .mpp
+    observed: type http with scheme "L402" and scheme "Payment"
+    note: Non-IANA HTTP auth scheme names carried in the OpenAPI-style securityScheme shape; a strict A2A 1.0 reader
+      expects the oneof-wrapped httpAuthSecurityScheme object.
+  - field: 16 non-standard top-level keys
+    observed: payment, pricing, sdks, identity, availability, verification, media_authority, delegation_authority,
+      …
+    note: 'Over two-thirds of the 24,786-byte body is vendor extension data. Some of it drifts from what the host
+      serves: pricing.x402.discovery_url and discovery.* name /.well-known/x402 (404), agent_authority.uri names
+      /.well-known/agent-authority (404), sdks.python.usage names www.taskhawktech.com/quickstart (404), and pricing.subscriptions
+      lists $29/$149/$499 tiers that governance.taskhawktech.com/pricing says are retired.'
+  - field: signatures / iconUrl / documentationUrl
+    observed: absent
+    note: No JWS signature block; authenticity rests on TLS to governance.taskhawktech.com.
+surface_relationship:
+  note: 'TaskHawk publishes three agent-facing surfaces that are projections of ONE gateway: the REST OpenAPI (23
+    operations), the MCP server at /mcp/ (9 tools, 5 of which bind to REST operationIds — see mcp/taskhawktech-com-tool-crosswalk.yml)
+    and this A2A card, whose 11 skills map onto the REST operations (action-verify→verify-action, provenance-attest→attest-action,
+    intent-bind→bind-intent, trust-certificate→generate-bundle, media-*→/media/*, shield-scan→shield-scan, mpp-*→/governance/mpp/*).
+    The card also names four verification endpoints (verify-token, verify-certificate, reputation, passport) that
+    exist on the host but are absent from the OpenAPI.'

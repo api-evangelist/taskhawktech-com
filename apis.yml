@@ -1,18 +1,134 @@
 aid: taskhawktech-com
 name: TaskHawk Systems
-description: 'TaskHawk Systems is a company surfaced via the API Evangelist harvest backlog (source: a2a-registry)
-  and added to the network as a stub for full-pipeline profiling.'
+description: 'TaskHawk Systems, LLC (Charlottesville, Virginia) builds operational verification infrastructure for
+  autonomous AI and software systems. Its commercial product, Kevros, is a verified release and evidence gateway:
+  before an agent spends, deploys, sends or actuates, it POSTs the proposed action to the Kevros Governance API
+  and receives a signed ALLOW, CONSTRAIN or DENY decision with a release token, recorded in a hash-chained, post-quantum-signed
+  provenance ledger. The gateway at governance.taskhawktech.com publishes an OpenAPI 3.1 contract (23 operations:
+  verify, attest, bind, verify-outcome, bundle, prompt-injection shield scan, media hash attestation, MPP payment
+  sessions), a hosted Streamable HTTP MCP server with 9 tools, an A2A agent card, RFC 8414 authorization-server
+  metadata, and per-call machine payment discovery over x402 (USDC on Base), L402 (Lightning) and MPP (Stripe) rails
+  with a 1,000-call trial allowance via POST /signup.'
 url: https://raw.githubusercontent.com/api-evangelist/taskhawktech-com/refs/heads/main/apis.yml
+image: https://taskhawktech.com/assets/brand/wordmark-light.svg
 x-type: company
 x-source: harvest:a2a-registry
-x-tier: stub
-x-tier-reason: harvest
+x-tier: profiled
+x-tier-reason: enrichment pass 2026-09-19 found a live OpenAPI, MCP server, A2A agent card and payment discovery
+  surface
 specificationVersion: '0.20'
 created: '2026-09-19'
 modified: '2026-09-19'
 tags:
-- Company
-apis: []
+- AI Governance
+- Agent Security
+- Runtime Enforcement
+- Policy Enforcement
+- Provenance
+- Compliance
+- Prompt Injection Detection
+- Media Attestation
+- Post-Quantum Cryptography
+- Formal Verification
+- x402
+- L402
+- Machine Payments
+- MCP
+- A2A
+- agent-native
+- Government
+- Defense
+apis:
+- aid: taskhawktech-com:kevros-governance-api
+  name: Kevros Governance API
+  description: REST gateway for runtime enforcement of autonomous agent actions. POST /governance/verify returns
+    a signed ALLOW/CONSTRAIN/DENY decision with a release token; /governance/attest appends a hash-chained provenance
+    record; /governance/bind and /governance/verify-outcome bind a declared intent to a command and check the outcome;
+    /governance/bundle exports a compliance evidence package. Also exposes /shield/scan prompt-injection detection,
+    /media/* hash attestation certificates, /governance/mpp/* governed streaming payment sessions, /signup trial
+    key provisioning and /payment/* rail discovery. Priced endpoints return HTTP 402 with x402, L402 and MPP challenges.
+  image: https://taskhawktech.com/assets/brand/wordmark-light.svg
+  humanURL: https://governance.taskhawktech.com/api
+  baseURL: https://governance.taskhawktech.com
+  tags:
+  - AI Governance
+  - Runtime Enforcement
+  - Provenance
+  - Prompt Injection Detection
+  - Media Attestation
+  - x402
+  - L402
+  - Machine Payments
+  properties:
+  - type: OpenAPI
+    url: openapi/taskhawktech-com-openapi.yml
+  - type: OpenAPI
+    url: https://governance.taskhawktech.com/openapi.json
+    name: Provider-hosted OpenAPI 3.1.0 (verbatim copy in openapi/_original/)
+  - type: Documentation
+    url: https://governance.taskhawktech.com/api
+  - type: APIReference
+    url: https://governance.taskhawktech.com/api
+  - type: GettingStarted
+    url: https://governance.taskhawktech.com/for-agents.txt
+  - type: LLMsTxt
+    url: llms/taskhawktech-com-governance-llms.txt
+  - type: LLMsTxt
+    url: https://governance.taskhawktech.com/llms.txt
+  - type: Pricing
+    url: https://governance.taskhawktech.com/pricing
+  - type: SignUp
+    url: https://governance.taskhawktech.com/signup
+  - type: StatusPage
+    url: https://governance.taskhawktech.com/status
+  - type: Overlay
+    url: overlays/taskhawktech-com-openapi-overlay.yaml
+  - type: Authentication
+    url: authentication/taskhawktech-com-authentication.yml
+  - type: Conventions
+    url: conventions/taskhawktech-com-conventions.yml
+  - type: ErrorCatalog
+    url: errors/taskhawktech-com-problem-types.yml
+  - type: DataModel
+    url: data-model/taskhawktech-com-data-model.yml
+  - type: OAuthScopes
+    url: scopes/taskhawktech-com-scopes.yml
+  - type: AgentSkill
+    url: skills/_index.yml
+  - type: RateLimits
+    url: rate-limits/taskhawktech-com-rate-limits.yml
+  - type: Plans
+    url: plans/taskhawktech-com-plans-pricing.yml
+- aid: taskhawktech-com:kevros-mcp-server
+  name: Kevros MCP Server
+  description: Hosted Streamable HTTP MCP server (protocol 2025-03-26, FastMCP, server version 0.4.1) at https://governance.taskhawktech.com/mcp/
+    exposing 9 tools (verify, attest, bind, verify-outcome, bundle, health, status, check-peer, verify-token), 2
+    resources and 2 prompts. tools/list, resources/list and prompts/list answer anonymously; paid tools (verify,
+    attest, bind, bundle) need an X-API-Key from POST /signup or a verified Delegation proof. Also published as
+    an MCP server.json manifest and a /.well-known/mcp.json descriptor, and listed on Smithery.
+  image: https://taskhawktech.com/assets/brand/wordmark-light.svg
+  humanURL: https://governance.taskhawktech.com/mcp/
+  baseURL: https://governance.taskhawktech.com/mcp/
+  tags:
+  - MCP
+  - AI Governance
+  - Agent Security
+  - agent-native
+  properties:
+  - type: MCPServer
+    url: mcp/taskhawktech-com-mcp.yml
+  - type: MCPServer
+    url: https://governance.taskhawktech.com/mcp/
+  - type: ToolCrosswalk
+    url: mcp/taskhawktech-com-tool-crosswalk.yml
+  - type: Documentation
+    url: https://governance.taskhawktech.com/.well-known/mcp.json
+  - type: OAuthScopes
+    url: scopes/taskhawktech-com-scopes.yml
+  - type: AgentCard
+    url: a2a/taskhawktech-com-a2a.yml
+  - type: LLMsTxt
+    url: llms/taskhawktech-com-for-agents.txt
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -21,3 +137,88 @@ maintainers:
 common:
 - type: Website
   url: https://taskhawktech.com/
+- type: VulnerabilityDisclosure
+  url: security/taskhawktech-com-vulnerability-disclosure.yml
+- type: DomainSecurity
+  url: security/taskhawktech-com-domain-security.yml
+- type: Authentication
+  url: authentication/taskhawktech-com-authentication.yml
+- type: DeveloperPortal
+  url: https://governance.taskhawktech.com/api
+- type: Documentation
+  url: https://governance.taskhawktech.com/api
+- type: APIReference
+  url: https://governance.taskhawktech.com/openapi.json
+- type: GettingStarted
+  url: https://governance.taskhawktech.com/for-agents.txt
+- type: Support
+  url: https://taskhawktech.com/legal/support
+- type: Pricing
+  url: https://taskhawktech.com/pricing
+- type: SignUp
+  url: https://governance.taskhawktech.com/signup
+- type: TermsOfService
+  url: https://taskhawktech.com/legal/terms
+- type: PrivacyPolicy
+  url: https://taskhawktech.com/legal/privacy
+- type: StatusPage
+  url: https://governance.taskhawktech.com/status
+- type: ChangeLog
+  url: https://taskhawktech.com/changelog
+- type: GitHubOrganization
+  url: https://github.com/taskhawk-systems
+- type: LLMsTxt
+  url: llms/taskhawktech-com-llms.txt
+- type: LLMsTxt
+  url: https://taskhawktech.com/llms.txt
+- type: MCPServer
+  url: mcp/taskhawktech-com-mcp.yml
+- type: AgentCard
+  url: a2a/taskhawktech-com-a2a.yml
+- type: WellKnown
+  url: well-known/taskhawktech-com-well-known.yml
+- type: SecurityTxt
+  url: well-known/taskhawktech-com-security.txt
+- type: Packages
+  url: packages/taskhawktech-com-packages.yml
+- type: SDKs
+  url: packages/taskhawktech-com-packages.yml
+- type: Conformance
+  url: conformance/taskhawktech-com-conformance.yml
+- type: Compliance
+  url: conformance/taskhawktech-com-conformance.yml
+- type: ErrorCatalog
+  url: errors/taskhawktech-com-problem-types.yml
+- type: Lifecycle
+  url: lifecycle/taskhawktech-com-lifecycle.yml
+- type: OAuthScopes
+  url: scopes/taskhawktech-com-scopes.yml
+- type: Conventions
+  url: conventions/taskhawktech-com-conventions.yml
+- type: Idempotency
+  url: conventions/taskhawktech-com-conventions.yml
+- type: ChangeLog
+  url: changelog/taskhawktech-com-changelog.yml
+- type: DataModel
+  url: data-model/taskhawktech-com-data-model.yml
+- type: Plans
+  url: plans/taskhawktech-com-plans-pricing.yml
+- type: RateLimits
+  url: rate-limits/taskhawktech-com-rate-limits.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: Security
+  url: security/taskhawktech-com-vulnerability-disclosure.yml
+- type: DataSubjectRequest
+  url: https://taskhawktech.com/legal/privacy
+- type: ToolCrosswalk
+  url: mcp/taskhawktech-com-tool-crosswalk.yml
+- type: Overlay
+  url: overlays/taskhawktech-com-openapi-overlay.yaml
+- type: OpenAPI
+  url: openapi/taskhawktech-com-openapi.yml
+x-enrichment:
+  date: '2026-09-19'
+  status: enriched
+  artifacts_added: 22
+  pass: local-v3

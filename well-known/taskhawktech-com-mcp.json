@@ -1,0 +1,98 @@
+{
+  "name": "Kevros Governance API",
+  "version": "0.4.0",
+  "description": "Runtime enforcement for autonomous agents. Verify actions, record provenance, bind intents, and return independently verifiable evidence.",
+  "endpoint": "https://governance.taskhawktech.com/mcp/",
+  "transport": "streamable-http",
+  "capabilities": {
+    "tools": 9,
+    "resources": 2,
+    "prompts": 2,
+    "http_media_authority": true
+  },
+  "authentication": {
+    "type": "header",
+    "header": "X-API-Key",
+    "required": false,
+    "required_for": [
+      "paid_tools"
+    ],
+    "auto_provision": true,
+    "signup_url": "https://governance.taskhawktech.com/signup",
+    "description": "Discovery (tools/list, prompts/list, resources/list) and no-charge tools (health, status, check-peer, verify-token, verify-outcome) do not require an X-API-Key. Paid tools (verify, attest, bind, bundle) require either an X-API-Key (POST /signup with {\"agent_id\":\"your-id\"} for a trial allowance) or a verified Delegation proof before x402, L402, or MPP payment credentials are accepted."
+  },
+  "access_policy": {
+    "public_discovery": "Read-only metadata.",
+    "paid_or_executable_access": "API key or verified Delegation proof required.",
+    "screening": "Sanctions, restricted-party, export-control, and abuse screening apply before paid or executable access."
+  },
+  "pricing": {
+    "trial_allowance": {
+      "calls": 1000,
+      "period": "monthly"
+    },
+    "free_tier": {
+      "deprecated": true,
+      "use": "trial_allowance",
+      "calls": 1000,
+      "period": "monthly"
+    },
+    "paid_tools": {
+      "verify": "$0.01",
+      "attest": "$0.02",
+      "bind": "$0.02",
+      "bundle": "$0.05"
+    },
+    "no_charge_tools": [
+      "health",
+      "status",
+      "check-peer",
+      "verify-token",
+      "verify-outcome"
+    ],
+    "free_tools": [
+      "health",
+      "status",
+      "check-peer",
+      "verify-token",
+      "verify-outcome"
+    ]
+  },
+  "provider": {
+    "name": "TaskHawk Systems",
+    "url": "https://www.taskhawktech.com",
+    "support": "support@taskhawktech.com"
+  },
+  "links": {
+    "documentation": "https://www.taskhawktech.com/docs",
+    "agent_card": "https://governance.taskhawktech.com/.well-known/agent.json",
+    "openapi": "https://governance.taskhawktech.com/openapi.json",
+    "smithery": "https://smithery.ai/servers/taskhawk-systems/kevros",
+    "mcpize": "https://mcpize.com/mcp/kevros"
+  },
+  "media_authority": {
+    "transport": "http",
+    "schema_version": "media-attestation-1.1",
+    "capabilities_url": "https://governance.taskhawktech.com/media/capabilities",
+    "attest_url": "https://governance.taskhawktech.com/media/attest",
+    "machine_verify_url": "https://governance.taskhawktech.com/media/verify",
+    "human_verify_url_template": "https://governance.taskhawktech.com/media/verify/{certificate_id}",
+    "status_url_template": "https://governance.taskhawktech.com/media/status/{certificate_id}",
+    "lifecycle_mutation_auth": "operator_api_key_or_admin",
+    "paid_issuance": true,
+    "free_verification": true,
+    "supports_deepfake_detection": false,
+    "supports_legal_rights_clearance": false,
+    "supports_subject_consent_verification": false,
+    "supports_c2pa_validation": false,
+    "supports_ad_targeting": false,
+    "does_not_prove": [
+      "deepfake detection",
+      "legal rights clearance",
+      "subject consent verification",
+      "C2PA validation",
+      "advertising delivery, targeting, spend, conversion, or endorsement",
+      "payment settlement or revenue"
+    ]
+  }
+}

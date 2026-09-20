@@ -1,0 +1,149 @@
+generated: '2026-09-19'
+method: searched
+source: openapi/taskhawktech-com-openapi.yml (schemas, x-payment-info, x-authority-info), https://governance.taskhawktech.com/for-agents.txt,
+  https://governance.taskhawktech.com/llms.txt, https://governance.taskhawktech.com/payment/discovery, live response
+  headers on POST /governance/verify (2026-09-19), https://taskhawktech.com/legal/security (IAM section).
+description: 'Cross-cutting runtime semantics of the Kevros Governance API: how it authenticates, how retries are
+  protected, how paid calls are challenged and settled, how decisions are versioned and traced, and which writes
+  can be taken back.'
+base_url: https://governance.taskhawktech.com
+api_style: REST over HTTPS, JSON request bodies (application/json), JSON responses; FastAPI/Pydantic-shaped validation;
+  no path versioning.
+authentication:
+  scheme: X-API-Key header (trial key from POST /signup, kvrs_ prefix per for-agents.txt) OR a verified payment-rail
+    credential on priced self-serve endpoints OR an operator-signed Delegation proof for governed execution
+  headers:
+  - X-API-Key
+  - X-Delegation-Token (declared on 12 operations)
+  - 'Authorization: Delegation <token> / Delegation-Proof: :<cose>: (for-agents.txt)'
+  - 'Authorization: L402 <macaroon>:<preimage>'
+  - PAYMENT-SIGNATURE / X-PAYMENT (x402)
+  - 'Authorization: Payment <MPP credential>'
+  - X-Admin-Key (getPaymentHealth deep=true only)
+  detail: authentication/taskhawktech-com-authentication.yml
+  docs: https://governance.taskhawktech.com/for-agents.txt
+idempotency:
+  supported: true
+  coverage: partial
+  scope:
+  - verify-action
+  mechanism: 'Request-body field VerifyRequest.idempotency_key ("Idempotency key for retry safety") — same key returns
+    the cached result (MCP verify tool description). Separately, VerifyRequest, AttestRequest and BindIntentRequest
+    carry cmd_id: "Command ID for replay protection … Server rejects duplicate cmd_ids within the replay window."'
+  key_format: client-chosen string
+  retention: not published ("replay window" is not quantified)
+  applies_to: 1 of 13 mutating operations carries idempotency_key; 3 of 13 carry cmd_id replay protection; media/*,
+    shield/*, mpp/*, signup and verify-outcome have neither.
+  header_based: false
+  docs: https://governance.taskhawktech.com/openapi.json#/components/schemas/VerifyRequest
+  note: 'The MCP annotations disagree with the REST schema: verify is idempotentHint true, but attest and bind are
+    idempotentHint false despite cmd_id. Treated as partial because the mechanism is scoped to named operations,
+    not the whole write surface.'
+replay_protection:
+  mechanism: cmd_id per request; Delegation challenges are nonce-bound (nonce, max-age=300)
+  operations:
+  - verify-action
+  - attest-action
+  - bind-intent
+dry_run:
+  supported: partial
+  mechanism: 'EnforcementMode enum [enforce, advisory, deny, gated]: in advisory mode the response carries advisory_decision
+    without enforcing. verify-action is itself a pre-action rehearsal of a downstream action. Safe-method GET/HEAD
+    on priced endpoints returns the 402 challenge without executing (for-agents.txt).'
+  docs: https://governance.taskhawktech.com/openapi.json#/components/schemas/EnforcementMode
+pagination:
+  style: none
+  note: No collection endpoints; generate-bundle bounds output with max_records and a time range instead of paging.
+field_expansion:
+  supported: false
+metadata:
+  supported: partial
+  mechanism: Free-form action_payload / context / policy_context objects (additionalProperties true) are recorded
+    into provenance; AttestRequest.context and MediaAttestRequest.tags.
+request_tracing:
+  request_id_header: null
+  response_headers:
+  - X-Kevros-Version
+  - X-Kevros-KGA (ML-DSA-87 signed governance attestation on paid calls — agent card pricing.kga)
+  - X-Payment-Error
+  - PAYMENT-REQUIRED
+  correlation_fields:
+  - verification_id
+  - provenance_hash
+  - hash_prev
+  - epoch
+  - timestamp_utc
+  - certificate_id
+  - intent_id
+  - binding_id
+  note: No request-id header is documented; correlation is by the ledger identifiers each response returns.
+versioning:
+  scheme: unversioned paths; service version 0.4.1 in info.version, GET /health and X-Kevros-Version
+  detail: lifecycle/taskhawktech-com-lifecycle.yml
+  changelog: changelog/taskhawktech-com-changelog.yml
+error_envelope:
+  media_type: application/problem+json (402) / application/json (422, 404)
+  rfc9457: partial — payment challenges only
+  shape: '402: { type, title, status, detail, … rail challenge fields }; 422: { detail: [ {loc, msg, type} ] };
+    404: { detail: "Not Found" }'
+  detail: errors/taskhawktech-com-problem-types.yml
+payment_semantics:
+  model: HTTP 402 per call on priced endpoints; three rails (x402 USDC on Base, L402 Lightning, MPP Stripe incl.
+    stablecoin) plus X-API-Key allowance
+  discovery: https://governance.taskhawktech.com/payment/discovery (ETag, 30 s cache; pricing_fingerprint changes
+    invalidate quotes)
+  rule: Payment buys the evaluation, never an ALLOW; DENY is a paid, recorded evaluation. Re-fetch discovery before
+    paying; select only rails with enabled=true; fail closed if discovery is unreachable.
+  rail_priority_aliases:
+  - /x402/governance/verify
+  - /l402/governance/verify
+  - /mpp/governance/verify
+  detail: plans/taskhawktech-com-plans-pricing.yml
+rate_limits:
+  signal_status: null
+  headers: []
+  published: 10 req/min and 1,000 calls/month per trial key; 10 shield scans/day per IP
+  detail: rate-limits/taskhawktech-com-rate-limits.yml
+  note: No 429 or RateLimit-*/Retry-After documented.
+reversibility:
+  grade: documented
+  summary: The write surface is mostly append-only by design (provenance ledger, attestations, intent bindings cannot
+    be undone), and the two reversal paths that exist have no stated window.
+  surfaces:
+  - write: attest_media_media_attest_post (issue media certificate)
+    reversal: revoke_media_certificate_media_revoke__certificate_id__post
+    reversal_semantics: Revokes the certificate (required body field reason; optional revoked_by); public status
+      then reflects revocation (/media/capabilities supports_revocation true). Operator key bound to the certificate
+      agent_id or admin key only.
+    window: null
+    window_source: null
+    note: No revocation window, grace period or reinstatement path is published.
+  - write: approve_media_certificate_media_approve__certificate_id__post
+    reversal: same operation with decision "denied" (default "approved")
+    window: null
+    note: Approval/denial is re-issuable; no window stated.
+  - write: mpp-create-session
+    reversal: mpp-close-session
+    reversal_semantics: Closes the streaming payment session and seals its provenance record; free. Stops further
+      spend; does not refund spend already settled.
+    window: session lifetime (duration_seconds set at creation)
+    window_source: https://governance.taskhawktech.com/openapi.json#/components/schemas/MPPSessionRequest
+    note: A bound, not a stated refund window.
+  - write: verify-action (release token issuance)
+    reversal: none in the contract
+    note: The MCP verify-token tool description says a token "remains currently authorized after any halt or revocation"
+      — a halt/revocation mechanism exists server-side but no public operation exposes it.
+  - write: attest-action / bind-intent / verify-outcome / generate-bundle
+    reversal: none — append-only by design
+    note: Terms §14 and the privacy policy state provenance records persist in the append-only ledger even after
+      termination.
+  - write: signup (API key issuance)
+    reversal: none public
+    note: Key revocation happens on termination (Terms §14); no self-serve revoke endpoint.
+  refunds:
+    url: https://taskhawktech.com/legal/refund-policy
+    probed: 200
+    note: Commercial refund/cancellation policy page exists for purchases; it is not a per-call API reversal.
+fail_closed:
+  statement: Any verification failure, ambiguity or unreachable gateway yields DENY (openapi verify-action description;
+    PyPI SDK fail_closed default; privacy policy MANAGE function).

@@ -1,0 +1,30 @@
+generated: '2026-09-19'
+method: generated
+source: Packaged Agent Skills generated from openapi/taskhawktech-com-openapi.yml and the provider's own MCP prompts
+  (verify-before-act, governance-audit) and for-agents.txt. Every operationId was checked verbatim in the spec;
+  cross-cutting rules cite ../conventions/, ../errors/ and ../authentication/. No provider-published skills or AGENTS.md
+  were found (governance host /skills, apex /skills not probed as no link names them; GitHub org has no public repos).
+skills:
+- file: taskhawktech-com-verify-before-act.md
+  name: Verify an action before executing it
+  api: openapi/taskhawktech-com-openapi.yml
+  operations:
+  - signup
+  - verify-action
+  - attest-action
+- file: taskhawktech-com-bind-intent-and-audit.md
+  name: Bind an intent, verify its outcome, export the evidence
+  api: openapi/taskhawktech-com-openapi.yml
+  operations:
+  - bind-intent
+  - verify-outcome
+  - generate-bundle
+- file: taskhawktech-com-media-attest-and-verify.md
+  name: Issue and verify a media authority certificate
+  api: openapi/taskhawktech-com-openapi.yml
+  operations:
+  - attest_media_media_attest_post
+  - verify_media_media_verify_post
+  - lookup_certificate_media_verify__certificate_id__get
+  - media_certificate_status_media_status__certificate_id__get
+  - revoke_media_certificate_media_revoke__certificate_id__post
