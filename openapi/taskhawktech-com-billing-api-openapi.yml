@@ -1,0 +1,527 @@
+openapi: 3.2.0
+info:
+  title: Taskhawktech Com Billing API
+  version: 0.4.1
+  contact:
+    name: TaskHawk Systems
+    url: https://taskhawktech.com/contact
+    email: support@taskhawktech.com
+  license:
+    name: TaskHawk Terms
+    url: https://taskhawktech.com/legal/terms
+  termsOfService: https://taskhawktech.com/legal/terms
+  description: 'Operations tagged billing across 2 of this provider''s published API definitions: taskhawktech-com-openapi.json, taskhawktech-com-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://governance.taskhawktech.com
+  description: Production Gateway
+security:
+- ApiKeyAuth: []
+tags:
+- name: Billing
+  description: Payment surface discovery for clients before attempting a paid call.
+paths:
+  /payment/discovery:
+    get:
+      tags:
+      - Billing
+      summary: 'Single-call aggregator: rail challenge configuration + all per-endpoint quotes'
+      description: 'One-call discovery: rail health AND per-endpoint quotes for every
+
+        paid endpoint, bundled into a single response.
+
+
+        Replaces the N+1 startup pattern (1x /payment/health + N x /payment/quote)
+
+        with a single HTTP round-trip. Cheaper for agents, cheaper for the
+
+        gateway origin, more frictionless.
+
+
+        Cache: 30s (matches /payment/health since it''s the bottleneck).
+
+
+        Conditional GET: when the client sends `If-None-Match: W/""`
+
+        AND the value matches the current pricing_fingerprint, the gateway
+
+        returns 304 Not Modified with NO body. Cached agents can poll the
+
+        endpoint cheaply (single line with the `requests` library: pass
+
+        `headers={''If-None-Match'': last_etag}` and check for 304). The 304
+
+        response includes the same ETag and Cache-Control headers as the
+
+        full 200 response so caches continue to dedupe.'
+      operationId: getPaymentDiscovery
+      responses:
+        '200':
+          description: 'Full payment surface in one response: rail challenge configuration + per-endpoint pricing'
+          content:
+            application/json:
+              schema: {}
+              example:
+                health:
+                  status: healthy
+                  rails_enabled: 5
+                  rails_total: 5
+                  rails:
+                  - rail: x402
+                    enabled: true
+                    network: base-mainnet
+                endpoints:
+                  /governance/verify:
+                    free: false
+                    rails:
+                    - rail: x402
+                      amount_usdc: '10000'
+                      amount_display: $0.01
+                      currency: USDC
+                      network: base-mainnet
+                doc: https://governance.taskhawktech.com/api
+    head:
+      tags:
+      - Billing
+      summary: 'Single-call aggregator: rail challenge configuration + all per-endpoint quotes'
+      description: 'One-call discovery: rail health AND per-endpoint quotes for every
+
+        paid endpoint, bundled into a single response.
+
+
+        Replaces the N+1 startup pattern (1x /payment/health + N x /payment/quote)
+
+        with a single HTTP round-trip. Cheaper for agents, cheaper for the
+
+        gateway origin, more frictionless.
+
+
+        Cache: 30s (matches /payment/health since it''s the bottleneck).
+
+
+        Conditional GET: when the client sends `If-None-Match: W/""`
+
+        AND the value matches the current pricing_fingerprint, the gateway
+
+        returns 304 Not Modified with NO body. Cached agents can poll the
+
+        endpoint cheaply (single line with the `requests` library: pass
+
+        `headers={''If-None-Match'': last_etag}` and check for 304). The 304
+
+        response includes the same ETag and Cache-Control headers as the
+
+        full 200 response so caches continue to dedupe.'
+      operationId: headPaymentDiscovery
+      responses:
+        '200':
+          description: 'Full payment surface in one response: rail challenge configuration + per-endpoint pricing'
+          content:
+            application/json:
+              schema: {}
+              example:
+                health:
+                  status: healthy
+                  rails_enabled: 5
+                  rails_total: 5
+                  rails:
+                  - rail: x402
+                    enabled: true
+                    network: base-mainnet
+                endpoints:
+                  /governance/verify:
+                    free: false
+                    rails:
+                    - rail: x402
+                      amount_usdc: '10000'
+                      amount_display: $0.01
+                      currency: USDC
+                      network: base-mainnet
+                doc: https://governance.taskhawktech.com/api
+      x-operation-id-source: normalized
+      x-operation-id-original: getPaymentDiscovery
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+  /payment/badge:
+    get:
+      tags:
+      - Billing
+      summary: Compact rail challenge-configuration status for embedding
+      description: 'Compact rail challenge-configuration badge for status pages, README badges, and
+
+        dashboards. Pairs with `/payment/health` (full detail) but returns
+
+        a single line that''s cheap to embed anywhere.
+
+
+        Two formats based on Accept header:
+
+        - `text/plain` -> "3/5 rails configured" (suitable for `curl`)
+
+        - `application/json` (default) → Shields.io schema
+
+
+        For Shields.io embedding:
+
+        https://img.shields.io/endpoint?url=https://governance.taskhawktech.com/payment/badge
+
+
+        Cache: 30s (matches /payment/health to keep counts in sync).'
+      operationId: getPaymentBadge
+      responses:
+        '200':
+          description: Shields.io-compatible JSON badge schema
+          content:
+            application/json:
+              schema: {}
+              example:
+                schemaVersion: 1
+                label: rails
+                message: 4/5 configured
+                color: brightgreen
+            text/plain:
+              example: 4/5 rails configured
+    head:
+      tags:
+      - Billing
+      summary: Compact rail challenge-configuration status for embedding
+      description: 'Compact rail challenge-configuration badge for status pages, README badges, and
+
+        dashboards. Pairs with `/payment/health` (full detail) but returns
+
+        a single line that''s cheap to embed anywhere.
+
+
+        Two formats based on Accept header:
+
+        - `text/plain` -> "3/5 rails configured" (suitable for `curl`)
+
+        - `application/json` (default) → Shields.io schema
+
+
+        For Shields.io embedding:
+
+        https://img.shields.io/endpoint?url=https://governance.taskhawktech.com/payment/badge
+
+
+        Cache: 30s (matches /payment/health to keep counts in sync).'
+      operationId: headPaymentBadge
+      responses:
+        '200':
+          description: Shields.io-compatible JSON badge schema
+          content:
+            application/json:
+              schema: {}
+              example:
+                schemaVersion: 1
+                label: rails
+                message: 4/5 configured
+                color: brightgreen
+            text/plain:
+              example: 4/5 rails configured
+      x-operation-id-source: normalized
+      x-operation-id-original: getPaymentBadge
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+  /payment/quote:
+    get:
+      tags:
+      - Billing
+      summary: Get the per-rail price for a specific endpoint
+      description: 'Per-endpoint price quote across all candidate rails.
+
+
+        Lets clients pre-budget for a paid call sequence without burning a 402
+
+        round-trip per endpoint. Returns the same price info that may be
+
+        embedded in a settlement-rail challenge response, but on demand and
+
+        without requiring the client to make a real request first.
+
+
+        Query param: `endpoint` (required) — the endpoint path the client
+
+        intends to call (e.g. `/governance/verify`).
+
+
+        Pairs with `/payment/health` for the full discovery loop:
+
+        1. GET /payment/health -> which rails can emit challenge/config metadata?
+
+        2. GET /payment/quote?endpoint=/governance/verify → how much?
+
+        3. POST /governance/verify only after X-API-Key or verified Delegation proof.'
+      operationId: getPaymentQuote
+      parameters:
+      - name: endpoint
+        in: query
+        required: false
+        schema:
+          type: string
+          default: ''
+          title: Endpoint
+      responses:
+        '200':
+          description: Per-rail price for the requested endpoint, with challenge metadata and Protocol 427 prerequisites inline
+          content:
+            application/json:
+              schema: {}
+              example:
+                endpoint: /governance/verify
+                free: false
+                rails:
+                - rail: x402
+                  amount_usdc: '10000'
+                  amount_display: $0.01
+                  currency: USDC
+                  network: base-mainnet
+                - rail: mpp
+                  amount_cents: 1
+                  amount_display: $0.01
+                  currency: USD
+                doc: https://governance.taskhawktech.com/api
+                health_url: https://governance.taskhawktech.com/payment/health
+        '400':
+          description: Invalid endpoint parameter
+        '404':
+          description: Endpoint is not priced (free or unknown)
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+  /payment/health:
+    head:
+      tags:
+      - Billing
+      summary: Payment rail challenge-configuration status
+      description: 'Per-rail payment challenge-configuration status. Public, cacheable for 30s.
+
+
+        For each payment rail, returns:
+
+        - enabled: True iff the configuration needed to issue a payment
+
+        challenge or discovery metadata is present (env vars, secrets,
+
+        identity material). This is not settlement or revenue evidence.
+
+        - rail: short identifier matching what /.well-known docs use
+
+        - reason: when enabled=False, a one-line operator-readable reason
+
+        (NEVER includes secret values)
+
+
+        Designed for two audiences:
+
+        1. AI agents — poll this BEFORE attempting a rail so they do not
+
+        chase a rail that cannot emit the expected challenge metadata.
+
+        2. Operators / oncall — single curl shows configured rail candidates
+
+        without needing to read the gateway''s bootlog.
+
+
+        By default this endpoint does NO outbound network calls — it only
+
+        reflects local public configuration state. `?deep=true` performs
+
+        operator-only backend probes and requires X-Admin-Key.'
+      operationId: getPaymentHealth
+      parameters:
+      - name: deep
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description: Probe backend connectivity; requires X-Admin-Key
+          default: false
+          title: Deep
+        description: Probe backend connectivity; requires X-Admin-Key
+      - name: X-Admin-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Admin-Key
+      responses:
+        '200':
+          description: Per-rail challenge-configuration state with operator-readable failure reasons. Not settlement or revenue evidence.
+          content:
+            application/json:
+              schema: {}
+              example:
+                status: healthy
+                rails_enabled: 3
+                rails_total: 5
+                rails:
+                - rail: x402
+                  enabled: true
+                  network: base-mainnet
+                - rail: l402
+                  enabled: true
+                  network: lightning
+                - rail: mpp
+                  enabled: true
+                  network: fiat
+                version: 0.x.x
+                doc: https://governance.taskhawktech.com/.well-known/x402
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      tags:
+      - Billing
+      summary: Payment rail challenge-configuration status
+      description: 'Per-rail payment challenge-configuration status. Public, cacheable for 30s.
+
+
+        For each payment rail, returns:
+
+        - enabled: True iff the configuration needed to issue a payment
+
+        challenge or discovery metadata is present (env vars, secrets,
+
+        identity material). This is not settlement or revenue evidence.
+
+        - rail: short identifier matching what /.well-known docs use
+
+        - reason: when enabled=False, a one-line operator-readable reason
+
+        (NEVER includes secret values)
+
+
+        Designed for two audiences:
+
+        1. AI agents — poll this BEFORE attempting a rail so they do not
+
+        chase a rail that cannot emit the expected challenge metadata.
+
+        2. Operators / oncall — single curl shows configured rail candidates
+
+        without needing to read the gateway''s bootlog.
+
+
+        By default this endpoint does NO outbound network calls — it only
+
+        reflects local public configuration state. `?deep=true` performs
+
+        operator-only backend probes and requires X-Admin-Key.'
+      operationId: getPaymentHealth
+      parameters:
+      - name: deep
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description: Probe backend connectivity; requires X-Admin-Key
+          default: false
+          title: Deep
+        description: Probe backend connectivity; requires X-Admin-Key
+      - name: X-Admin-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Admin-Key
+      responses:
+        '200':
+          description: Per-rail challenge-configuration state with operator-readable failure reasons. Not settlement or revenue evidence.
+          content:
+            application/json:
+              schema: {}
+              example:
+                status: healthy
+                rails_enabled: 3
+                rails_total: 5
+                rails:
+                - rail: x402
+                  enabled: true
+                  network: base-mainnet
+                - rail: l402
+                  enabled: true
+                  network: lightning
+                - rail: mpp
+                  enabled: true
+                  network: fiat
+                version: 0.x.x
+                doc: https://governance.taskhawktech.com/.well-known/x402
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+components:
+  schemas:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Get a trial key via POST /signup. 1,000-call trial allowance.
+x-refined-from:
+- taskhawktech-com-openapi.json
+- taskhawktech-com-openapi.yml
+x-service-info:
+  categories:
+  - ai
+  - security
+  - compliance
+  docs:
+    homepage: https://governance.taskhawktech.com
+    apiReference: https://governance.taskhawktech.com/openapi.json
+    llms: https://governance.taskhawktech.com/for-agents.txt

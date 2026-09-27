@@ -1,0 +1,1466 @@
+openapi: 3.2.0
+info:
+  title: Taskhawktech Com Governance API
+  version: 0.4.1
+  contact:
+    name: TaskHawk Systems
+    url: https://taskhawktech.com/contact
+    email: support@taskhawktech.com
+  license:
+    name: TaskHawk Terms
+    url: https://taskhawktech.com/legal/terms
+  termsOfService: https://taskhawktech.com/legal/terms
+  description: 'Operations tagged governance across 2 of this provider''s published API definitions: taskhawktech-com-openapi.json, taskhawktech-com-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://governance.taskhawktech.com
+  description: Production Gateway
+security:
+- ApiKeyAuth: []
+tags:
+- name: Governance
+  description: 'Public governance operations: verify, attest, bind, verify-outcome, and bundle. Successful operations return endpoint-specific evidence; provenance-capable operations append audit records.'
+paths:
+  /governance/verify:
+    post:
+      tags:
+      - Governance
+      summary: Verify Action
+      description: 'Verify a proposed action against policy bounds.
+
+
+        Returns a signed ALLOW, CONSTRAIN, or DENY decision with release token.
+
+        Fail-closed: any verification failure results in DENY.'
+      operationId: verify-action
+      parameters:
+      - name: X-API-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Api-Key
+      - name: X-Delegation-Token
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Delegation-Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyRequest'
+      responses:
+        '200':
+          description: Verification decision with signed release token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyResponse'
+              example:
+                decision: ALLOW
+                verification_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                release_token: example-release-token-not-a-secret
+                applied_action:
+                  motor_command:
+                    throttle: 0.75
+                reason: Action within policy bounds
+                epoch: 42
+                provenance_hash: abc123...
+                hash_prev: 000000...
+                timestamp_utc: '2026-03-19T12:00:00+00:00'
+                enforcement_mode: enforce
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        '402':
+          description: Payment challenge metadata. Executable POST requires X-API-Key, verified Delegation proof, or a verified x402, L402, or MPP credential obtained from safe-method payment challenge discovery.
+      x-payment-info:
+        intent: charge
+        method: stripe
+        amount: '1'
+        currency: usd
+        amount_unit: usd_cents
+        description: Action verification
+        delegation_authorization_required: true
+        settlement_signal: false
+        revenue_signal: false
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+  /governance/attest:
+    post:
+      tags:
+      - Governance
+      summary: Attest Action
+      description: 'Create a hash-chained provenance attestation for an agent action.
+
+
+        Each attestation extends the append-only evidence chain.
+
+        Independently verifiable by any third party.'
+      operationId: attest-action
+      parameters:
+      - name: X-API-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Api-Key
+      - name: X-Delegation-Token
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Delegation-Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttestRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttestResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        '402':
+          description: Payment challenge metadata. Executable POST requires X-API-Key, verified Delegation proof, or a verified x402, L402, or MPP credential obtained from safe-method payment challenge discovery.
+      x-payment-info:
+        intent: charge
+        method: stripe
+        amount: '2'
+        currency: usd
+        amount_unit: usd_cents
+        description: Provenance attestation
+        delegation_authorization_required: true
+        settlement_signal: false
+        revenue_signal: false
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+  /governance/bind:
+    post:
+      tags:
+      - Governance
+      summary: Bind Intent
+      description: 'Declare an intent and cryptographically bind it to a command.
+
+
+        Proves that the command was issued in service of the declared intent.
+
+        The binding HMAC can be independently verified.'
+      operationId: bind-intent
+      parameters:
+      - name: X-API-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Api-Key
+      - name: X-Delegation-Token
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Delegation-Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BindIntentRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BindIntentResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        '402':
+          description: Payment challenge metadata. Executable POST requires X-API-Key, verified Delegation proof, or a verified x402, L402, or MPP credential obtained from safe-method payment challenge discovery.
+      x-payment-info:
+        intent: charge
+        method: stripe
+        amount: '2'
+        currency: usd
+        amount_unit: usd_cents
+        description: Intent binding
+        delegation_authorization_required: true
+        settlement_signal: false
+        revenue_signal: false
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+  /governance/verify-outcome:
+    post:
+      tags:
+      - Governance
+      summary: Verify Outcome
+      description: 'Verify that an executed action achieved its declared intent.
+
+
+        Closes the loop: intent -> command -> action -> outcome -> verification.'
+      operationId: verify-outcome
+      parameters:
+      - name: X-API-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Api-Key
+      - name: X-Delegation-Token
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Delegation-Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyOutcomeRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyOutcomeResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-payment-info:
+        intent: none
+        method: none
+        amount: null
+        currency: usd
+        amount_unit: usd_cents
+        settlement_signal: false
+        revenue_signal: false
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+  /governance/bundle:
+    post:
+      tags:
+      - Governance
+      summary: Generate Bundle
+      description: 'Generate a certifier-grade compliance evidence bundle.
+
+
+        Contains hash-chained provenance records, intent binding proofs,
+
+        PQC attestation references, and verification instructions.
+
+
+        The bundle is independently verifiable without Kevros access.'
+      operationId: generate-bundle
+      parameters:
+      - name: X-API-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Api-Key
+      - name: X-Delegation-Token
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Delegation-Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BundleRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BundleResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        '402':
+          description: Payment challenge metadata. Executable POST requires X-API-Key, verified Delegation proof, or a verified x402, L402, or MPP credential obtained from safe-method payment challenge discovery.
+      x-payment-info:
+        intent: charge
+        method: stripe
+        amount: '5'
+        currency: usd
+        amount_unit: usd_cents
+        description: Compliance bundle
+        delegation_authorization_required: true
+        settlement_signal: false
+        revenue_signal: false
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+  /governance/mpp/session:
+    post:
+      tags:
+      - Governance
+      summary: Create a governed MPP payment session
+      description: 'Authorize a new streaming payment session. The agent receives a signed session token and can stream payments within the declared budget and rate limits. Every session is recorded in the provenance ledger. Cost: $0.02 per session.'
+      operationId: mpp-create-session
+      parameters:
+      - name: X-API-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Api-Key
+      - name: X-Delegation-Token
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Delegation-Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MPPSessionRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MPPSessionResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        '402':
+          description: Payment challenge metadata. Executable POST requires X-API-Key, verified Delegation proof, or a verified x402, L402, or MPP credential obtained from safe-method payment challenge discovery.
+      x-payment-info:
+        intent: charge
+        method: stripe
+        amount: '2'
+        currency: usd
+        amount_unit: usd_cents
+        description: Governed streaming session
+        delegation_authorization_required: true
+        settlement_signal: false
+        revenue_signal: false
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+  /governance/mpp/heartbeat:
+    post:
+      tags:
+      - Governance
+      summary: Mid-session drift check
+      description: Called periodically during a streaming payment session. Kevros checks for budget overruns, rate limit violations, and unauthorized service usage. Free (no charge per heartbeat).
+      operationId: mpp-heartbeat
+      parameters:
+      - name: X-API-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Api-Key
+      - name: X-Delegation-Token
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Delegation-Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MPPHeartbeatRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MPPHeartbeatResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-payment-info:
+        intent: none
+        method: none
+        amount: null
+        currency: usd
+        amount_unit: usd_cents
+        settlement_signal: false
+        revenue_signal: false
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+  /governance/mpp/close:
+    post:
+      tags:
+      - Governance
+      summary: Close an MPP session
+      description: Close a streaming payment session and seal the provenance record. Free (no charge).
+      operationId: mpp-close-session
+      parameters:
+      - name: X-API-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Api-Key
+      - name: X-Delegation-Token
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Delegation-Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MPPCloseRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MPPCloseResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-payment-info:
+        intent: none
+        method: none
+        amount: null
+        currency: usd
+        amount_unit: usd_cents
+        settlement_signal: false
+        revenue_signal: false
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+components:
+  schemas:
+    AttestRequest:
+      properties:
+        agent_id:
+          type: string
+          title: Agent Id
+        action_description:
+          type: string
+          maxLength: 2048
+          minLength: 1
+          title: Action Description
+          description: What the agent did
+        action_payload:
+          additionalProperties: true
+          type: object
+          title: Action Payload
+          description: Full action details for the record
+        context:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Context
+          description: Additional context (environment, state, etc.)
+        prior_attestation_hash:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Prior Attestation Hash
+          description: Hash of the agent's prior attestation (for agent-side chain continuity)
+        cmd_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cmd Id
+          description: Command ID for replay protection. Auto-generated by SDK if not provided.
+        risk_category:
+          anyOf:
+          - $ref: '#/components/schemas/RiskCategory'
+          - type: 'null'
+          description: EU AI Act risk classification for this attestation record.
+      type: object
+      required:
+      - agent_id
+      - action_description
+      - action_payload
+      title: AttestRequest
+      description: Request to create a hash-chained provenance attestation.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    BundleRequest:
+      properties:
+        agent_id:
+          type: string
+          title: Agent Id
+        time_range_start:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Time Range Start
+          description: 'ISO 8601 start of range (default: last 24h)'
+        time_range_end:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Time Range End
+          description: 'ISO 8601 end of range (default: now)'
+        max_records:
+          type: integer
+          maximum: 100000.0
+          minimum: 1.0
+          title: Max Records
+          description: Maximum records to include (pagination limit)
+          default: 10000
+        include_intent_chains:
+          type: boolean
+          title: Include Intent Chains
+          default: true
+        include_pqc_signatures:
+          type: boolean
+          title: Include Pqc Signatures
+          default: true
+        include_verification_instructions:
+          type: boolean
+          title: Include Verification Instructions
+          default: true
+      type: object
+      required:
+      - agent_id
+      title: BundleRequest
+      description: Request a certifier-grade compliance evidence bundle.
+    VerifyOutcomeResponse:
+      properties:
+        verification_id:
+          type: string
+          title: Verification Id
+        intent_id:
+          type: string
+          title: Intent Id
+        status:
+          $ref: '#/components/schemas/OutcomeStatus'
+        achieved_percentage:
+          type: number
+          title: Achieved Percentage
+        discrepancy:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Discrepancy
+        evidence_hash:
+          type: string
+          title: Evidence Hash
+        timestamp_utc:
+          type: string
+          title: Timestamp Utc
+        contract_versions:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Contract Versions
+          description: 'Surface version metadata for the contract this response participates in (issue #595). Optional + nullable so server can `exclude_none=True` from wire when omitted | preserves backwards-compat with strict (`extra=''forbid''`) SDK clients pinned to the pre-field schema.'
+      type: object
+      required:
+      - verification_id
+      - intent_id
+      - status
+      - achieved_percentage
+      - evidence_hash
+      - timestamp_utc
+      title: VerifyOutcomeResponse
+      description: Outcome verification result.
+    IntentSource:
+      type: string
+      enum:
+      - HUMAN_OPERATOR
+      - AI_PLANNER
+      - MISSION_SCRIPT
+      - REMOTE_API
+      - SENSOR_TRIGGER
+      - INTERNAL
+      title: IntentSource
+    BindIntentResponse:
+      properties:
+        intent_id:
+          type: string
+          title: Intent Id
+        intent_hash:
+          type: string
+          title: Intent Hash
+          description: SHA-256 hash of canonical intent
+        binding_id:
+          type: string
+          title: Binding Id
+        binding_hmac:
+          type: string
+          title: Binding Hmac
+          description: HMAC proving intent-command linkage
+        command_hash:
+          type: string
+          title: Command Hash
+        epoch:
+          type: integer
+          title: Epoch
+        timestamp_utc:
+          type: string
+          title: Timestamp Utc
+        contract_versions:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Contract Versions
+          description: 'Surface version metadata for the contract this response participates in (issue #595). Optional + nullable so server can `exclude_none=True` from wire when omitted | preserves backwards-compat with strict (`extra=''forbid''`) SDK clients pinned to the pre-field schema.'
+      type: object
+      required:
+      - intent_id
+      - intent_hash
+      - binding_id
+      - binding_hmac
+      - command_hash
+      - epoch
+      - timestamp_utc
+      title: BindIntentResponse
+      description: Cryptographic intent binding.
+    VerifyResponse:
+      properties:
+        decision:
+          $ref: '#/components/schemas/Decision'
+        verification_id:
+          type: string
+          title: Verification Id
+          description: Unique ID for this verification
+        release_token:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Release Token
+          description: Cryptographically signed release token (present for ALLOW and CONSTRAIN decisions). Submit the token alone to /governance/verify-token to confirm authenticity; the gateway performs the comparison server-side.
+        applied_action:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Applied Action
+          description: The action as it will be applied (may be constrained to bounds)
+        policy_applied:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Policy Applied
+          description: Policy constraints that were applied
+        reason:
+          type: string
+          title: Reason
+          description: Human/agent-readable reason for decision
+          default: ''
+        epoch:
+          type: integer
+          title: Epoch
+          description: Provenance epoch of this decision
+        provenance_hash:
+          type: string
+          title: Provenance Hash
+          description: Hash-chain reference for this decision
+        hash_prev:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Hash Prev
+          description: Previous hash in provenance chain
+        timestamp_utc:
+          type: string
+          title: Timestamp Utc
+        enforcement_mode:
+          $ref: '#/components/schemas/EnforcementMode'
+          description: Enforcement mode for this decision.
+          default: enforce
+        advisory_decision:
+          anyOf:
+          - $ref: '#/components/schemas/Decision'
+          - type: 'null'
+          description: Present only when enforcement_mode is 'advisory'.
+        enrichment:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Enrichment
+          description: AI-enriched decision context (powered by enterprise LLM). Present only for tiers with enrichment allowance. Contains explanation and compliance_note fields for auditor/operator consumption.
+        contract_versions:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Contract Versions
+          description: 'Surface version metadata for the contract this response participates in (issue #595). Optional + nullable so server can `exclude_none=True` from wire when omitted | preserves backwards-compat with strict (`extra=''forbid''`) SDK clients pinned to the pre-field schema.'
+      type: object
+      required:
+      - decision
+      - verification_id
+      - epoch
+      - provenance_hash
+      title: VerifyResponse
+      description: Signed verification decision.
+    MPPCloseRequest:
+      properties:
+        session_id:
+          type: string
+          title: Session Id
+          description: Session to close
+        agent_id:
+          type: string
+          title: Agent Id
+          description: Agent closing the session
+        final_spent_cents:
+          type: integer
+          minimum: 0.0
+          title: Final Spent Cents
+        final_transactions_count:
+          type: integer
+          minimum: 0.0
+          title: Final Transactions Count
+        close_reason:
+          type: string
+          title: Close Reason
+          description: completed, budget_exhausted, timeout, drift_detected, agent_requested
+          default: completed
+      type: object
+      required:
+      - session_id
+      - agent_id
+      - final_spent_cents
+      - final_transactions_count
+      title: MPPCloseRequest
+      description: Close a streaming payment session.
+    VerifyRequest:
+      properties:
+        action_type:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Action Type
+          description: Type of action being verified (e.g., 'motor_command', 'api_call', 'transaction')
+        action_payload:
+          additionalProperties: true
+          type: object
+          title: Action Payload
+          description: The action to verify - contents depend on action_type
+        policy_context:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Policy Context
+          description: Optional policy constraints (max values, allowed ranges, etc.)
+        template_id:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Template Id
+          description: Named policy template (e.g., 'robotics-arm', 'financial-transaction'). Merged with policy_context - agent-supplied values override template defaults.
+        agent_id:
+          type: string
+          title: Agent Id
+          description: Identifier of the requesting agent
+        idempotency_key:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency Key
+          description: Idempotency key for retry safety
+        cmd_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cmd Id
+          description: Command ID for replay protection. Auto-generated by SDK if not provided. Server rejects duplicate cmd_ids within the replay window.
+        risk_category:
+          anyOf:
+          - $ref: '#/components/schemas/RiskCategory'
+          - type: 'null'
+          description: EU AI Act risk classification (MINIMAL, LIMITED, HIGH, UNACCEPTABLE). Recorded in provenance for regulatory compliance tagging.
+      type: object
+      required:
+      - action_type
+      - action_payload
+      - agent_id
+      title: VerifyRequest
+      description: Request to verify an action against policy bounds.
+    AttestResponse:
+      properties:
+        attestation_id:
+          type: string
+          title: Attestation Id
+        epoch:
+          type: integer
+          title: Epoch
+        hash_prev:
+          type: string
+          title: Hash Prev
+          description: Previous hash in the chain
+        hash_curr:
+          type: string
+          title: Hash Curr
+          description: Current hash (includes this record)
+        pqc_block_ref:
+          type: string
+          minLength: 1
+          title: Pqc Block Ref
+          description: 'Post-quantum signature anchor reference. Always populated. Form: ''block:<N>:sig:<hex16>...:policy:<policy>'' for chain positions past the first block boundary; ''pending:<chain_length>/<BLOCK_SIZE>'' before. See ``pqc_anchor`` for full metadata.'
+        pqc_anchor:
+          $ref: '#/components/schemas/PQCAnchor'
+          description: Rich PQC anchor metadata (block_index, anchor_lag, signature_policy, etc.). See spec.md §16.7 for the verifier contract.
+        timestamp_utc:
+          type: string
+          title: Timestamp Utc
+        chain_length:
+          type: integer
+          title: Chain Length
+          description: Number of records in the chain so far
+        contract_versions:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Contract Versions
+          description: 'Surface version metadata for the contract this response participates in (issue #595). Optional + nullable so server can `exclude_none=True` from wire when omitted | preserves backwards-compat with strict (`extra=''forbid''`) SDK clients pinned to the pre-field schema.'
+      type: object
+      required:
+      - attestation_id
+      - epoch
+      - hash_prev
+      - hash_curr
+      - pqc_block_ref
+      - pqc_anchor
+      - timestamp_utc
+      - chain_length
+      title: AttestResponse
+      description: 'Hash-chained provenance attestation.
+
+
+        Iteration-3 finding (2026-05-11 Prove Claims #19 regression): the
+
+        legacy shape had ``pqc_block_ref: Optional[str]`` which FastAPI
+
+        dropped from JSON when null (the 99% case between block boundaries).
+
+        External claim verifiers saw no PQC evidence on most responses,
+
+        contradicting the Six-Layer thesis posture.
+
+
+        Post-fix: ``pqc_block_ref`` is ALWAYS a non-empty string referencing
+
+        the most recent signed block (or a ``pending:N/100`` sentinel before
+
+        the first block). The new ``pqc_anchor`` field gives rich metadata
+
+        for verifier consumption. Field shape is documented in spec.md §16.7.'
+    OutcomeStatus:
+      type: string
+      enum:
+      - ACHIEVED
+      - PARTIALLY_ACHIEVED
+      - FAILED
+      - BLOCKED
+      - TIMEOUT
+      title: OutcomeStatus
+    EnforcementMode:
+      type: string
+      enum:
+      - enforce
+      - advisory
+      - deny
+      - gated
+      title: EnforcementMode
+    IntentType:
+      type: string
+      enum:
+      - NAVIGATION
+      - MANIPULATION
+      - SENSING
+      - COMMUNICATION
+      - MAINTENANCE
+      - EMERGENCY
+      - OPERATOR_COMMAND
+      - AI_GENERATED
+      - AUTOMATED
+      title: IntentType
+    PQCAnchor:
+      properties:
+        block_index:
+          type: integer
+          minimum: -1.0
+          title: Block Index
+          description: 0-indexed block number of the most recent signed block; -1 if no block has been signed yet
+        block_ref:
+          type: string
+          minLength: 1
+          title: Block Ref
+          description: 'Human-readable reference to the anchoring block signature. Form: ''block:<N>:sig:<hex16>...:policy:<policy>'' or ''pending:<chain_length>/<BLOCK_SIZE>'' before the first block.'
+        anchor_lag:
+          type: integer
+          exclusiveMaximum: 100.0
+          minimum: 0.0
+          title: Anchor Lag
+          description: Number of records since the last signed block boundary. Always 0 <= anchor_lag < BLOCK_SIZE (=100).
+        next_block_at:
+          type: integer
+          title: Next Block At
+          description: chain_length at which the next block signature will fire
+        signature_policy:
+          type: string
+          title: Signature Policy
+          description: 'Most-recent anchor block''s signature policy: ''ml_dsa_only'' (api_key/free/l402 rails), ''dual_pq'' (x402/MPP on-chain rails), or ''pending'' (no block signed yet)'
+        algorithm:
+          type: string
+          title: Algorithm
+          description: Primary signature algorithm (ML-DSA-87 = FIPS 204)
+        standard:
+          type: string
+          title: Standard
+          description: Primary signature standard (FIPS 204)
+        slh_dsa_present:
+          type: boolean
+          title: Slh Dsa Present
+          description: True if the anchor block also carries an SLH-DSA-SHA2-256f signature (FIPS 205). Required for dual_pq rails.
+      type: object
+      required:
+      - block_index
+      - block_ref
+      - anchor_lag
+      - next_block_at
+      - signature_policy
+      - algorithm
+      - standard
+      - slh_dsa_present
+      title: PQCAnchor
+      description: "Cryptographic anchor binding an attestation to a PQC-signed block.\n\nPer spec.md §16.7, every attestation response carries an anchor that\nreferences the most recent COMPLETED PQC block. Consumers verify:\n\n  * Records 0..(block_index+1)*BLOCK_SIZE-1 are covered by the\n    ML-DSA-87 (and optionally SLH-DSA-SHA2-256f) signature at\n    block_index.\n  * The current attestation extends the chain anchor_lag records\n    beyond the last signed boundary; the next block signature will\n    fire when chain_length reaches next_block_at.\n  * Before the first block boundary (chain_length < BLOCK_SIZE),\n    block_index = -1 and signature_policy = \"pending\"; the anchor\n    object is still emitted so the response shape is stable.\n\nThis contract is load-bearing for external claim verification\n(DOE Genesis, CVP, LM SBIR, marketplace cert reviewers)."
+    MPPHeartbeatResponse:
+      properties:
+        session_id:
+          type: string
+          title: Session Id
+        status:
+          type: string
+          title: Status
+        budget_remaining_cents:
+          type: integer
+          title: Budget Remaining Cents
+        time_remaining_seconds:
+          type: integer
+          title: Time Remaining Seconds
+        drift_detected:
+          type: boolean
+          title: Drift Detected
+        drift_reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Drift Reason
+        provenance_hash:
+          type: string
+          title: Provenance Hash
+      type: object
+      required:
+      - session_id
+      - status
+      - budget_remaining_cents
+      - time_remaining_seconds
+      - drift_detected
+      - provenance_hash
+      title: MPPHeartbeatResponse
+      description: Heartbeat drift check result.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    Decision:
+      type: string
+      enum:
+      - ALLOW
+      - CONSTRAIN
+      - DENY
+      title: Decision
+    VerifyOutcomeRequest:
+      properties:
+        agent_id:
+          type: string
+          title: Agent Id
+        intent_id:
+          type: string
+          maxLength: 256
+          title: Intent Id
+        binding_id:
+          type: string
+          maxLength: 256
+          title: Binding Id
+        actual_state:
+          additionalProperties: true
+          type: object
+          title: Actual State
+          description: The state after action execution
+        tolerance:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Tolerance
+          description: Acceptable deviation from goal state (0=exact, 1=any)
+          default: 0.1
+      type: object
+      required:
+      - agent_id
+      - intent_id
+      - binding_id
+      - actual_state
+      title: VerifyOutcomeRequest
+      description: Verify that an action achieved its declared intent.
+    MPPHeartbeatRequest:
+      properties:
+        session_id:
+          type: string
+          title: Session Id
+          description: Active session ID
+        agent_id:
+          type: string
+          title: Agent Id
+          description: Agent sending heartbeat
+        spent_cents:
+          type: integer
+          minimum: 0.0
+          title: Spent Cents
+          description: Total spent so far in this session
+        transactions_count:
+          type: integer
+          minimum: 0.0
+          title: Transactions Count
+        current_service:
+          type: string
+          title: Current Service
+          description: Service currently being used
+        spending_rate_cents_per_minute:
+          type: number
+          minimum: 0.0
+          title: Spending Rate Cents Per Minute
+          description: Current spending rate
+      type: object
+      required:
+      - session_id
+      - agent_id
+      - spent_cents
+      - transactions_count
+      - current_service
+      - spending_rate_cents_per_minute
+      title: MPPHeartbeatRequest
+      description: Mid-session drift check during streaming payments.
+    BundleResponse:
+      properties:
+        bundle_id:
+          type: string
+          title: Bundle Id
+        agent_id:
+          type: string
+          title: Agent Id
+        record_count:
+          type: integer
+          title: Record Count
+        truncated:
+          type: boolean
+          title: Truncated
+          description: Whether records were truncated by max_records limit
+          default: false
+        chain_integrity:
+          type: boolean
+          title: Chain Integrity
+          description: Whether the hash chain is intact end-to-end
+        time_range:
+          additionalProperties:
+            type: string
+          type: object
+          title: Time Range
+        records:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Records
+        intent_chains:
+          anyOf:
+          - items:
+              additionalProperties: true
+              type: object
+            type: array
+          - type: 'null'
+          title: Intent Chains
+        pqc_signatures:
+          anyOf:
+          - items:
+              additionalProperties: true
+              type: object
+            type: array
+          - type: 'null'
+          title: Pqc Signatures
+        verification_instructions:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Verification Instructions
+          description: How a third party can independently verify this bundle
+        bundle_hash:
+          type: string
+          title: Bundle Hash
+          description: SHA-256 of the entire bundle (for integrity checking)
+        timestamp_utc:
+          type: string
+          title: Timestamp Utc
+        contract_versions:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Contract Versions
+          description: 'Surface version metadata for the contract this response participates in (issue #595). Optional + nullable so server can `exclude_none=True` from wire when omitted | preserves backwards-compat with strict (`extra=''forbid''`) SDK clients pinned to the pre-field schema.'
+      type: object
+      required:
+      - bundle_id
+      - agent_id
+      - record_count
+      - chain_integrity
+      - time_range
+      - records
+      - bundle_hash
+      - timestamp_utc
+      title: BundleResponse
+      description: Certifier-grade compliance evidence bundle.
+    MPPCloseResponse:
+      properties:
+        session_id:
+          type: string
+          title: Session Id
+        status:
+          type: string
+          title: Status
+        total_spent_cents:
+          type: integer
+          title: Total Spent Cents
+        total_transactions:
+          type: integer
+          title: Total Transactions
+        duration_actual_seconds:
+          type: number
+          title: Duration Actual Seconds
+        provenance_hash:
+          type: string
+          title: Provenance Hash
+        bundle_available:
+          type: boolean
+          title: Bundle Available
+      type: object
+      required:
+      - session_id
+      - status
+      - total_spent_cents
+      - total_transactions
+      - duration_actual_seconds
+      - provenance_hash
+      - bundle_available
+      title: MPPCloseResponse
+      description: Session close confirmation.
+    BindIntentRequest:
+      properties:
+        agent_id:
+          type: string
+          title: Agent Id
+        intent_type:
+          $ref: '#/components/schemas/IntentType'
+        intent_description:
+          type: string
+          maxLength: 2048
+          minLength: 1
+          title: Intent Description
+          description: What the agent intends to accomplish
+        intent_source:
+          $ref: '#/components/schemas/IntentSource'
+          default: AI_PLANNER
+        goal_state:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Goal State
+          description: Target state the agent wants to reach
+        command_payload:
+          additionalProperties: true
+          type: object
+          title: Command Payload
+          description: The command being bound to this intent
+        max_duration_ms:
+          anyOf:
+          - type: number
+            maximum: 86400000.0
+            minimum: 0.0
+          - type: 'null'
+          title: Max Duration Ms
+          description: Max duration in milliseconds (up to 24h)
+        parent_intent_id:
+          anyOf:
+          - type: string
+            maxLength: 256
+          - type: 'null'
+          title: Parent Intent Id
+          description: Parent intent for hierarchical intent chains
+        cmd_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cmd Id
+          description: Command ID for replay protection. Auto-generated by SDK if not provided.
+      type: object
+      required:
+      - agent_id
+      - intent_type
+      - intent_description
+      - command_payload
+      title: BindIntentRequest
+      description: Declare an intent and bind it to a command.
+    MPPSessionResponse:
+      properties:
+        session_id:
+          type: string
+          title: Session Id
+        decision:
+          type: string
+          title: Decision
+        session_token:
+          type: string
+          title: Session Token
+        budget_cents:
+          type: integer
+          title: Budget Cents
+        duration_seconds:
+          type: integer
+          title: Duration Seconds
+        rate_limit_cents_per_minute:
+          type: integer
+          title: Rate Limit Cents Per Minute
+        allowed_services:
+          items:
+            type: string
+          type: array
+          title: Allowed Services
+        expires_at:
+          type: string
+          title: Expires At
+        provenance_hash:
+          type: string
+          title: Provenance Hash
+      type: object
+      required:
+      - session_id
+      - decision
+      - session_token
+      - budget_cents
+      - duration_seconds
+      - rate_limit_cents_per_minute
+      - allowed_services
+      - expires_at
+      - provenance_hash
+      title: MPPSessionResponse
+      description: Authorized MPP session details.
+    RiskCategory:
+      type: string
+      enum:
+      - MINIMAL
+      - LIMITED
+      - HIGH
+      - UNACCEPTABLE
+      title: RiskCategory
+      description: EU AI Act Annex III risk classification for AI systems.
+    MPPSessionRequest:
+      properties:
+        agent_id:
+          type: string
+          title: Agent Id
+          description: Agent requesting the session
+        session_budget_cents:
+          type: integer
+          maximum: 10000000.0
+          minimum: 1.0
+          title: Session Budget Cents
+          description: Maximum session spend in cents
+        duration_seconds:
+          type: integer
+          maximum: 86400.0
+          minimum: 60.0
+          title: Duration Seconds
+          description: Session duration (60s to 24h)
+        spending_rate_limit_cents_per_minute:
+          type: integer
+          maximum: 100000.0
+          minimum: 1.0
+          title: Spending Rate Limit Cents Per Minute
+          description: Max spend rate per minute in cents
+          default: 500
+        allowed_services:
+          items:
+            type: string
+          type: array
+          title: Allowed Services
+          description: Allowed service categories
+        payment_rail:
+          type: string
+          title: Payment Rail
+          description: 'Payment rail: stripe, x402, tempo'
+          default: stripe
+      type: object
+      required:
+      - agent_id
+      - session_budget_cents
+      - duration_seconds
+      title: MPPSessionRequest
+      description: Authorize a new MPP streaming payment session.
+      example:
+        agent_id: agent-001
+        allowed_services:
+        - inference
+        - storage
+        - compute
+        duration_seconds: 3600
+        payment_rail: stripe
+        session_budget_cents: 50000
+        spending_rate_limit_cents_per_minute: 500
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Get a trial key via POST /signup. 1,000-call trial allowance.
+x-refined-from:
+- taskhawktech-com-openapi.json
+- taskhawktech-com-openapi.yml
+x-service-info:
+  categories:
+  - ai
+  - security
+  - compliance
+  docs:
+    homepage: https://governance.taskhawktech.com
+    apiReference: https://governance.taskhawktech.com/openapi.json
+    llms: https://governance.taskhawktech.com/for-agents.txt

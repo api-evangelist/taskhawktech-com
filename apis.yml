@@ -35,81 +35,47 @@ tags:
 - Machine Payments
 - MCP
 - A2A
+- Agent-Native
+- Government
+- Defense
+tags_raw:
+- AI Governance
+- Agent Security
+- Runtime Enforcement
+- Policy Enforcement
+- Provenance
+- Compliance
+- Prompt Injection Detection
+- Media Attestation
+- Post-Quantum Cryptography
+- Formal Verification
+- x402
+- L402
+- Machine Payments
+- MCP
+- A2A
 - agent-native
 - Government
 - Defense
 apis:
-- aid: taskhawktech-com:kevros-governance-api
-  name: Kevros Governance API
-  description: REST gateway for runtime enforcement of autonomous agent actions. POST /governance/verify returns
-    a signed ALLOW/CONSTRAIN/DENY decision with a release token; /governance/attest appends a hash-chained provenance
-    record; /governance/bind and /governance/verify-outcome bind a declared intent to a command and check the outcome;
-    /governance/bundle exports a compliance evidence package. Also exposes /shield/scan prompt-injection detection,
-    /media/* hash attestation certificates, /governance/mpp/* governed streaming payment sessions, /signup trial
-    key provisioning and /payment/* rail discovery. Priced endpoints return HTTP 402 with x402, L402 and MPP challenges.
-  image: https://taskhawktech.com/assets/brand/wordmark-light.svg
-  humanURL: https://governance.taskhawktech.com/api
-  baseURL: https://governance.taskhawktech.com
-  tags:
-  - AI Governance
-  - Runtime Enforcement
-  - Provenance
-  - Prompt Injection Detection
-  - Media Attestation
-  - x402
-  - L402
-  - Machine Payments
-  properties:
-  - type: OpenAPI
-    url: openapi/taskhawktech-com-openapi.yml
-  - type: OpenAPI
-    url: https://governance.taskhawktech.com/openapi.json
-    name: Provider-hosted OpenAPI 3.1.0 (verbatim copy in openapi/_original/)
-  - type: Documentation
-    url: https://governance.taskhawktech.com/api
-  - type: APIReference
-    url: https://governance.taskhawktech.com/api
-  - type: GettingStarted
-    url: https://governance.taskhawktech.com/for-agents.txt
-  - type: LLMsTxt
-    url: llms/taskhawktech-com-governance-llms.txt
-  - type: LLMsTxt
-    url: https://governance.taskhawktech.com/llms.txt
-  - type: Pricing
-    url: https://governance.taskhawktech.com/pricing
-  - type: SignUp
-    url: https://governance.taskhawktech.com/signup
-  - type: StatusPage
-    url: https://governance.taskhawktech.com/status
-  - type: Overlay
-    url: overlays/taskhawktech-com-openapi-overlay.yaml
-  - type: Authentication
-    url: authentication/taskhawktech-com-authentication.yml
-  - type: Conventions
-    url: conventions/taskhawktech-com-conventions.yml
-  - type: ErrorCatalog
-    url: errors/taskhawktech-com-problem-types.yml
-  - type: DataModel
-    url: data-model/taskhawktech-com-data-model.yml
-  - type: OAuthScopes
-    url: scopes/taskhawktech-com-scopes.yml
-  - type: AgentSkill
-    url: skills/_index.yml
-  - type: RateLimits
-    url: rate-limits/taskhawktech-com-rate-limits.yml
-  - type: Plans
-    url: plans/taskhawktech-com-plans-pricing.yml
 - aid: taskhawktech-com:kevros-mcp-server
   name: Kevros MCP Server
-  description: Hosted Streamable HTTP MCP server (protocol 2025-03-26, FastMCP, server version 0.4.1) at https://governance.taskhawktech.com/mcp/
-    exposing 9 tools (verify, attest, bind, verify-outcome, bundle, health, status, check-peer, verify-token), 2
-    resources and 2 prompts. tools/list, resources/list and prompts/list answer anonymously; paid tools (verify,
-    attest, bind, bundle) need an X-API-Key from POST /signup or a verified Delegation proof. Also published as
-    an MCP server.json manifest and a /.well-known/mcp.json descriptor, and listed on Smithery.
+  description: >-
+    Hosted Streamable HTTP MCP server (protocol 2025-03-26, FastMCP, server version 0.4.1) at https://governance.taskhawktech.com/mcp/
+    exposing 9 tools (verify, attest, bind, verify-outcome, bundle, health, status, check-peer, verify-token),
+    2 resources and 2 prompts. tools/list, resources/list and prompts/list answer anonymously; paid tools
+    (verify, attest, bind, bundle) need an X-API-Key from POST /signup or a verified Delegation proof.
+    Also published as an MCP server.json manifest and a /.well-known/mcp.json descriptor, and listed on
+    Smithery.
   image: https://taskhawktech.com/assets/brand/wordmark-light.svg
   humanURL: https://governance.taskhawktech.com/mcp/
   baseURL: https://governance.taskhawktech.com/mcp/
   tags:
+  - MCP
+  - AI Governance
+  - Agent Security
+  - Agent-Native
+  tags_raw:
   - MCP
   - AI Governance
   - Agent Security
@@ -129,6 +95,225 @@ apis:
     url: a2a/taskhawktech-com-a2a.yml
   - type: LLMsTxt
     url: llms/taskhawktech-com-for-agents.txt
+- aid: taskhawktech-com:taskhawktech-com-billing-api
+  name: TaskHawk Systems Billing API
+  description: >-
+    Payment surface discovery for clients before attempting a paid call.
+
+
+    1. `GET /payment/health` - rail challenge and configuration status.
+
+    2. `GET /payment/quote?endpoint=/path` - per-endpoint price across candidate rails.
+
+    3. For generic paid agents, fetch a safe-method 402 challenge, then POST with a verified rail credential.
+    Unpaid executable POST remains Delegation-gated.
+
+
+    `GET /payment/discovery` aggregates rail status and quotes. `GET /payment/badge` returns a compact
+    status badge payload. Discovery is cached and does not represent settlement, adoption, or revenue
+    evidence.
+  humanURL: https://governance.taskhawktech.com/api
+  baseURL: https://governance.taskhawktech.com
+  tags:
+  - billing
+  properties:
+  - type: OpenAPI
+    url: openapi/taskhawktech-com-billing-api-openapi.yml
+  - type: Documentation
+    url: https://governance.taskhawktech.com/api
+  - type: APIReference
+    url: https://governance.taskhawktech.com/api
+  - type: GettingStarted
+    url: https://governance.taskhawktech.com/for-agents.txt
+  - type: LLMsTxt
+    url: llms/taskhawktech-com-governance-llms.txt
+  - type: LLMsTxt
+    url: https://governance.taskhawktech.com/llms.txt
+  - type: Pricing
+    url: https://governance.taskhawktech.com/pricing
+  - type: SignUp
+    url: https://governance.taskhawktech.com/signup
+  - type: StatusPage
+    url: https://governance.taskhawktech.com/status
+  - type: Authentication
+    url: authentication/taskhawktech-com-authentication.yml
+  - type: Conventions
+    url: conventions/taskhawktech-com-conventions.yml
+  - type: ErrorCatalog
+    url: errors/taskhawktech-com-problem-types.yml
+  - type: DataModel
+    url: data-model/taskhawktech-com-data-model.yml
+  - type: OAuthScopes
+    url: scopes/taskhawktech-com-scopes.yml
+  - type: RateLimits
+    url: rate-limits/taskhawktech-com-rate-limits.yml
+  - type: Plans
+    url: plans/taskhawktech-com-plans-pricing.yml
+- aid: taskhawktech-com:taskhawktech-com-governance-api
+  name: TaskHawk Systems Governance API
+  description: >-
+    Public governance operations: verify, attest, bind, verify-outcome, and bundle. Successful operations
+    return endpoint-specific evidence; provenance-capable operations append audit records.
+  humanURL: https://governance.taskhawktech.com/api
+  baseURL: https://governance.taskhawktech.com
+  tags:
+  - governance
+  properties:
+  - type: OpenAPI
+    url: openapi/taskhawktech-com-governance-api-openapi.yml
+  - type: Documentation
+    url: https://governance.taskhawktech.com/api
+  - type: APIReference
+    url: https://governance.taskhawktech.com/api
+  - type: GettingStarted
+    url: https://governance.taskhawktech.com/for-agents.txt
+  - type: LLMsTxt
+    url: llms/taskhawktech-com-governance-llms.txt
+  - type: LLMsTxt
+    url: https://governance.taskhawktech.com/llms.txt
+  - type: Pricing
+    url: https://governance.taskhawktech.com/pricing
+  - type: SignUp
+    url: https://governance.taskhawktech.com/signup
+  - type: StatusPage
+    url: https://governance.taskhawktech.com/status
+  - type: Authentication
+    url: authentication/taskhawktech-com-authentication.yml
+  - type: Conventions
+    url: conventions/taskhawktech-com-conventions.yml
+  - type: ErrorCatalog
+    url: errors/taskhawktech-com-problem-types.yml
+  - type: DataModel
+    url: data-model/taskhawktech-com-data-model.yml
+  - type: OAuthScopes
+    url: scopes/taskhawktech-com-scopes.yml
+  - type: RateLimits
+    url: rate-limits/taskhawktech-com-rate-limits.yml
+  - type: Plans
+    url: plans/taskhawktech-com-plans-pricing.yml
+- aid: taskhawktech-com:taskhawktech-com-media-api
+  name: TaskHawk Systems Media API
+  description: The media API from TaskHawk Systems — 7 operation(s) for media.
+  humanURL: https://governance.taskhawktech.com/api
+  baseURL: https://governance.taskhawktech.com
+  tags:
+  - media
+  properties:
+  - type: OpenAPI
+    url: openapi/taskhawktech-com-media-api-openapi.yml
+  - type: Documentation
+    url: https://governance.taskhawktech.com/api
+  - type: APIReference
+    url: https://governance.taskhawktech.com/api
+  - type: GettingStarted
+    url: https://governance.taskhawktech.com/for-agents.txt
+  - type: LLMsTxt
+    url: llms/taskhawktech-com-governance-llms.txt
+  - type: LLMsTxt
+    url: https://governance.taskhawktech.com/llms.txt
+  - type: Pricing
+    url: https://governance.taskhawktech.com/pricing
+  - type: SignUp
+    url: https://governance.taskhawktech.com/signup
+  - type: StatusPage
+    url: https://governance.taskhawktech.com/status
+  - type: Authentication
+    url: authentication/taskhawktech-com-authentication.yml
+  - type: Conventions
+    url: conventions/taskhawktech-com-conventions.yml
+  - type: ErrorCatalog
+    url: errors/taskhawktech-com-problem-types.yml
+  - type: DataModel
+    url: data-model/taskhawktech-com-data-model.yml
+  - type: OAuthScopes
+    url: scopes/taskhawktech-com-scopes.yml
+  - type: RateLimits
+    url: rate-limits/taskhawktech-com-rate-limits.yml
+  - type: Plans
+    url: plans/taskhawktech-com-plans-pricing.yml
+- aid: taskhawktech-com:taskhawktech-com-shield-api
+  name: TaskHawk Systems Shield API
+  description: >-
+    Prompt injection detection. DeBERTa-v3 classifier with sub-second inference. Trial allowance: 10 scans/day
+    per IP.
+  humanURL: https://governance.taskhawktech.com/api
+  baseURL: https://governance.taskhawktech.com
+  tags:
+  - shield
+  properties:
+  - type: OpenAPI
+    url: openapi/taskhawktech-com-shield-api-openapi.yml
+  - type: Documentation
+    url: https://governance.taskhawktech.com/api
+  - type: APIReference
+    url: https://governance.taskhawktech.com/api
+  - type: GettingStarted
+    url: https://governance.taskhawktech.com/for-agents.txt
+  - type: LLMsTxt
+    url: llms/taskhawktech-com-governance-llms.txt
+  - type: LLMsTxt
+    url: https://governance.taskhawktech.com/llms.txt
+  - type: Pricing
+    url: https://governance.taskhawktech.com/pricing
+  - type: SignUp
+    url: https://governance.taskhawktech.com/signup
+  - type: StatusPage
+    url: https://governance.taskhawktech.com/status
+  - type: Authentication
+    url: authentication/taskhawktech-com-authentication.yml
+  - type: Conventions
+    url: conventions/taskhawktech-com-conventions.yml
+  - type: ErrorCatalog
+    url: errors/taskhawktech-com-problem-types.yml
+  - type: DataModel
+    url: data-model/taskhawktech-com-data-model.yml
+  - type: OAuthScopes
+    url: scopes/taskhawktech-com-scopes.yml
+  - type: RateLimits
+    url: rate-limits/taskhawktech-com-rate-limits.yml
+  - type: Plans
+    url: plans/taskhawktech-com-plans-pricing.yml
+- aid: taskhawktech-com:taskhawktech-com-signup-api
+  name: TaskHawk Systems Signup API
+  description: >-
+    Self-serve API key provisioning. No email or credit card required. 1,000-call trial allowance.
+  humanURL: https://governance.taskhawktech.com/api
+  baseURL: https://governance.taskhawktech.com
+  tags:
+  - signup
+  properties:
+  - type: OpenAPI
+    url: openapi/taskhawktech-com-signup-api-openapi.yml
+  - type: Documentation
+    url: https://governance.taskhawktech.com/api
+  - type: APIReference
+    url: https://governance.taskhawktech.com/api
+  - type: GettingStarted
+    url: https://governance.taskhawktech.com/for-agents.txt
+  - type: LLMsTxt
+    url: llms/taskhawktech-com-governance-llms.txt
+  - type: LLMsTxt
+    url: https://governance.taskhawktech.com/llms.txt
+  - type: Pricing
+    url: https://governance.taskhawktech.com/pricing
+  - type: SignUp
+    url: https://governance.taskhawktech.com/signup
+  - type: StatusPage
+    url: https://governance.taskhawktech.com/status
+  - type: Authentication
+    url: authentication/taskhawktech-com-authentication.yml
+  - type: Conventions
+    url: conventions/taskhawktech-com-conventions.yml
+  - type: ErrorCatalog
+    url: errors/taskhawktech-com-problem-types.yml
+  - type: DataModel
+    url: data-model/taskhawktech-com-data-model.yml
+  - type: OAuthScopes
+    url: scopes/taskhawktech-com-scopes.yml
+  - type: RateLimits
+    url: rate-limits/taskhawktech-com-rate-limits.yml
+  - type: Plans
+    url: plans/taskhawktech-com-plans-pricing.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -222,3 +407,10 @@ x-enrichment:
   status: enriched
   artifacts_added: 22
   pass: local-v3
+x-a2a:
+  verified: true
+  probed: '2026-09-26'
+  url: "https://governance.taskhawktech.com/.well-known/agent-card.json"
+  grade: "near-conformant"
+  protocol_version: "0.2.6"
+  control: 404

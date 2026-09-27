@@ -1,0 +1,214 @@
+openapi: 3.2.0
+info:
+  title: Taskhawktech Com Signup API
+  version: 0.4.1
+  contact:
+    name: TaskHawk Systems
+    url: https://taskhawktech.com/contact
+    email: support@taskhawktech.com
+  license:
+    name: TaskHawk Terms
+    url: https://taskhawktech.com/legal/terms
+  termsOfService: https://taskhawktech.com/legal/terms
+  description: 'Operations tagged signup across 2 of this provider''s published API definitions: taskhawktech-com-openapi.json, taskhawktech-com-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://governance.taskhawktech.com
+  description: Production Gateway
+security:
+- ApiKeyAuth: []
+tags:
+- name: Signup
+  description: Self-serve API key provisioning. No email or credit card required. 1,000-call trial allowance.
+paths:
+  /signup:
+    post:
+      tags:
+      - Signup
+      summary: Signup
+      description: 'Get a trial API key for agent evaluation.
+
+
+        - 1,000 calls per month
+
+        - 10 requests per minute rate limit
+
+        - No credit card, no email required
+
+        - Upgrade anytime for higher limits
+
+
+        Anti-abuse: rate-limited keys per IP per 24 hours.'
+      operationId: signup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+        required: true
+      responses:
+        '200':
+          description: Trial API key provisioned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResponse'
+              example:
+                api_key: ''
+                tier: free
+                monthly_limit: 1000
+                rate_limit_per_minute: 10
+                upgrade_url: https://governance.taskhawktech.com/pricing
+                payment_discovery_url: https://governance.taskhawktech.com/payment/discovery
+                usage:
+                  header: X-API-Key
+                  example: 'curl -H ''X-API-Key: kv1_...'' -X POST https://governance.taskhawktech.com/governance/verify ...'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security: []
+      x-payment-info:
+        intent: none
+        method: none
+        amount: null
+        currency: usd
+        amount_unit: usd_cents
+        settlement_signal: false
+        revenue_signal: false
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+components:
+  schemas:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    SignupResponse:
+      properties:
+        api_key:
+          type: string
+          title: Api Key
+        tier:
+          type: string
+          title: Tier
+          default: free
+        monthly_limit:
+          type: integer
+          title: Monthly Limit
+          default: 1000
+        rate_limit_per_minute:
+          type: integer
+          title: Rate Limit Per Minute
+          default: 10
+        upgrade_url:
+          type: string
+          title: Upgrade Url
+        payment_discovery_url:
+          type: string
+          title: Payment Discovery Url
+        profile_url:
+          type: string
+          title: Profile Url
+        usage:
+          additionalProperties:
+            type: string
+          type: object
+          title: Usage
+          description: How to use the key (header name + curl example)
+        contract_versions:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Contract Versions
+          description: 'Surface version metadata for the contract this response participates in (issue #595). Optional + nullable so server can `exclude_none=True` from wire when omitted | preserves backwards-compat with strict (`extra=''forbid''`) SDK clients pinned to the pre-field schema.'
+      type: object
+      required:
+      - api_key
+      title: SignupResponse
+      description: Returned once on successful signup. The api_key is shown once - store it.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    SignupRequest:
+      properties:
+        agent_id:
+          type: string
+          maxLength: 256
+          minLength: 1
+          title: Agent Id
+          description: The agent's identifier (required - this is how you're tracked)
+        operator_email:
+          type: string
+          maxLength: 320
+          title: Operator Email
+          description: Optional operator email for account recovery
+          default: ''
+        operator_name:
+          type: string
+          maxLength: 256
+          title: Operator Name
+          description: Optional legal entity name
+          default: ''
+        referred_by:
+          anyOf:
+          - type: string
+            maxLength: 256
+          - type: 'null'
+          title: Referred By
+          description: Broker agent_id that referred this operator
+      type: object
+      required:
+      - agent_id
+      title: SignupRequest
+      description: Agent self-serve signup request. agent_id is required; email/name optional.
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Get a trial key via POST /signup. 1,000-call trial allowance.
+x-refined-from:
+- taskhawktech-com-openapi.json
+- taskhawktech-com-openapi.yml
+x-service-info:
+  categories:
+  - ai
+  - security
+  - compliance
+  docs:
+    homepage: https://governance.taskhawktech.com
+    apiReference: https://governance.taskhawktech.com/openapi.json
+    llms: https://governance.taskhawktech.com/for-agents.txt

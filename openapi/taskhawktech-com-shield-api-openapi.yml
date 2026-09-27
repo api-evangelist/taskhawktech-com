@@ -1,0 +1,241 @@
+openapi: 3.2.0
+info:
+  title: Taskhawktech Com Shield API
+  version: 0.4.1
+  contact:
+    name: TaskHawk Systems
+    url: https://taskhawktech.com/contact
+    email: support@taskhawktech.com
+  license:
+    name: TaskHawk Terms
+    url: https://taskhawktech.com/legal/terms
+  termsOfService: https://taskhawktech.com/legal/terms
+  description: 'Operations tagged shield across 2 of this provider''s published API definitions: taskhawktech-com-openapi.json, taskhawktech-com-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://governance.taskhawktech.com
+  description: Production Gateway
+security:
+- ApiKeyAuth: []
+tags:
+- name: shield
+  description: 'Prompt injection detection. DeBERTa-v3 classifier with sub-second inference. Trial allowance: 10 scans/day per IP.'
+paths:
+  /shield/scan:
+    post:
+      tags:
+      - shield
+      summary: Shield Scan
+      description: Scan a prompt for injection attacks. $0.01 per scan.
+      operationId: shield-scan
+      parameters:
+      - name: X-API-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Api-Key
+      - name: X-Delegation-Token
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Delegation-Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScanRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        '402':
+          description: Payment challenge metadata. Executable POST requires X-API-Key, verified Delegation proof, or a verified x402, L402, or MPP credential obtained from safe-method payment challenge discovery.
+      x-payment-info:
+        intent: charge
+        method: stripe
+        amount: '1'
+        currency: usd
+        amount_unit: usd_cents
+        description: Prompt injection detection
+        delegation_authorization_required: true
+        settlement_signal: false
+        revenue_signal: false
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+  /shield/scan-free:
+    post:
+      tags:
+      - shield
+      summary: Shield Scan Free
+      description: Free prompt injection scan. 10 scans/day per IP, no auth needed.
+      operationId: shield-scan-free
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScanRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security: []
+      x-payment-info:
+        intent: none
+        method: none
+        amount: null
+        currency: usd
+        amount_unit: usd_cents
+        settlement_signal: false
+        revenue_signal: false
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+components:
+  schemas:
+    ScanResponse:
+      properties:
+        scan_id:
+          type: string
+          title: Scan Id
+        injection_detected:
+          type: boolean
+          title: Injection Detected
+        confidence:
+          type: number
+          title: Confidence
+        risk_level:
+          type: string
+          title: Risk Level
+        latency_ms:
+          type: number
+          title: Latency Ms
+        model_version:
+          type: string
+          title: Model Version
+        truncated:
+          type: boolean
+          title: Truncated
+        timestamp_utc:
+          type: string
+          title: Timestamp Utc
+        hmac:
+          type: string
+          title: Hmac
+      type: object
+      required:
+      - scan_id
+      - injection_detected
+      - confidence
+      - risk_level
+      - latency_ms
+      - model_version
+      - truncated
+      - timestamp_utc
+      - hmac
+      title: ScanResponse
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ScanRequest:
+      properties:
+        prompt:
+          type: string
+          maxLength: 10000
+          minLength: 1
+          title: Prompt
+          description: Text to scan for prompt injection
+        agent_id:
+          anyOf:
+          - type: string
+            maxLength: 256
+            pattern: ^[a-zA-Z0-9._@\-]+$
+          - type: 'null'
+          title: Agent Id
+          description: Optional agent identifier
+        context:
+          anyOf:
+          - type: string
+            maxLength: 500
+          - type: 'null'
+          title: Context
+          description: Optional context about the prompt source
+      type: object
+      required:
+      - prompt
+      title: ScanRequest
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Get a trial key via POST /signup. 1,000-call trial allowance.
+x-refined-from:
+- taskhawktech-com-openapi.json
+- taskhawktech-com-openapi.yml
+x-service-info:
+  categories:
+  - ai
+  - security
+  - compliance
+  docs:
+    homepage: https://governance.taskhawktech.com
+    apiReference: https://governance.taskhawktech.com/openapi.json
+    llms: https://governance.taskhawktech.com/for-agents.txt

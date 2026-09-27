@@ -1,0 +1,986 @@
+openapi: 3.2.0
+info:
+  title: Taskhawktech Com Media API
+  version: 0.4.1
+  contact:
+    name: TaskHawk Systems
+    url: https://taskhawktech.com/contact
+    email: support@taskhawktech.com
+  license:
+    name: TaskHawk Terms
+    url: https://taskhawktech.com/legal/terms
+  termsOfService: https://taskhawktech.com/legal/terms
+  description: 'Operations tagged media across 2 of this provider''s published API definitions: taskhawktech-com-openapi.json, taskhawktech-com-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://governance.taskhawktech.com
+  description: Production Gateway
+security:
+- ApiKeyAuth: []
+tags:
+- name: Media
+paths:
+  /media/capabilities:
+    get:
+      tags:
+      - Media
+      summary: Media Capabilities
+      description: Machine-readable media authority capabilities for agent clients.
+      operationId: media_capabilities_media_capabilities_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Media Capabilities Media Capabilities Get
+      x-payment-info:
+        intent: none
+        method: none
+        amount: null
+        currency: usd
+        amount_unit: usd_cents
+        settlement_signal: false
+        revenue_signal: false
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+  /media/verify:
+    get:
+      tags:
+      - Media
+      summary: Media Verify Tool
+      description: Human-facing verifier. Hashing happens client-side; the file is not uploaded.
+      operationId: media_verify_tool_media_verify_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            text/html:
+              schema:
+                type: string
+      x-payment-info:
+        intent: none
+        method: none
+        amount: null
+        currency: usd
+        amount_unit: usd_cents
+        settlement_signal: false
+        revenue_signal: false
+    post:
+      tags:
+      - Media
+      summary: Verify Media
+      description: 'Verify a media file''s hash against its attestation certificate.
+
+
+        Free endpoint - no API key or payment required. Anyone can verify.'
+      operationId: verify_media_media_verify_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaVerifyRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaVerifyResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-payment-info:
+        intent: none
+        method: none
+        amount: null
+        currency: usd
+        amount_unit: usd_cents
+        settlement_signal: false
+        revenue_signal: false
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+  /media/status/{certificate_id}:
+    get:
+      tags:
+      - Media
+      summary: Media Certificate Status
+      description: Public certificate lifecycle status for agents and humans.
+      operationId: media_certificate_status_media_status__certificate_id__get
+      parameters:
+      - name: certificate_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Certificate Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Media Certificate Status Media Status  Certificate Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-payment-info:
+        intent: none
+        method: none
+        amount: null
+        currency: usd
+        amount_unit: usd_cents
+        settlement_signal: false
+        revenue_signal: false
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+  /media/approve/{certificate_id}:
+    post:
+      tags:
+      - Media
+      summary: Approve Media Certificate
+      description: Approve or deny a certificate for campaign/media use.
+      operationId: approve_media_certificate_media_approve__certificate_id__post
+      parameters:
+      - name: certificate_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Certificate Id
+      - name: X-API-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Api-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaApprovalRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Approve Media Certificate Media Approve  Certificate Id  Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-payment-info:
+        intent: none
+        method: none
+        amount: null
+        currency: usd
+        amount_unit: usd_cents
+        settlement_signal: false
+        revenue_signal: false
+      x-authority-info:
+        authority: media_lifecycle_operator
+        requires:
+        - X-API-Key bound to certificate agent_id
+        - or internal admin key
+        accepts_paid_rail: false
+        settlement_signal: false
+        revenue_signal: false
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+  /media/revoke/{certificate_id}:
+    post:
+      tags:
+      - Media
+      summary: Revoke Media Certificate
+      description: Revoke a media authority certificate.
+      operationId: revoke_media_certificate_media_revoke__certificate_id__post
+      parameters:
+      - name: certificate_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Certificate Id
+      - name: X-API-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Api-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaRevokeRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Revoke Media Certificate Media Revoke  Certificate Id  Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-payment-info:
+        intent: none
+        method: none
+        amount: null
+        currency: usd
+        amount_unit: usd_cents
+        settlement_signal: false
+        revenue_signal: false
+      x-authority-info:
+        authority: media_lifecycle_operator
+        requires:
+        - X-API-Key bound to certificate agent_id
+        - or internal admin key
+        accepts_paid_rail: false
+        settlement_signal: false
+        revenue_signal: false
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+  /media/attest:
+    post:
+      tags:
+      - Media
+      summary: Attest Media
+      description: 'Attest a media file''s integrity via its SHA-256 hash.
+
+
+        The media file never leaves the user''s device. Only the hash
+
+        and metadata are recorded in the provenance chain. Returns a
+
+        PQC-signed certificate with a public verification URL.'
+      operationId: attest_media_media_attest_post
+      parameters:
+      - name: X-API-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Api-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaAttestRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaAttestResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        '402':
+          description: Payment challenge metadata. Executable POST requires X-API-Key, verified Delegation proof, or a verified x402, L402, or MPP credential obtained from safe-method payment challenge discovery.
+      x-payment-info:
+        intent: charge
+        method: mpp-fiat
+        amount: '5'
+        currency: usd
+        amount_unit: usd_cents
+        description: Media authority certificate issuance
+        delegation_authorization_required: true
+        settlement_signal: false
+        revenue_signal: false
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+  /media/verify/{certificate_id}:
+    get:
+      tags:
+      - Media
+      summary: Lookup Certificate
+      description: 'Look up a media attestation certificate by its ID.
+
+
+        Free endpoint - no API key or payment required. Returns the
+
+        full certificate for independent verification.'
+      operationId: lookup_certificate_media_verify__certificate_id__get
+      parameters:
+      - name: certificate_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Certificate Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaVerifyResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-payment-info:
+        intent: none
+        method: none
+        amount: null
+        currency: usd
+        amount_unit: usd_cents
+        settlement_signal: false
+        revenue_signal: false
+    servers:
+    - url: https://governance.taskhawktech.com
+      description: Production Gateway
+components:
+  schemas:
+    MediaRevokeRequest:
+      properties:
+        reason:
+          type: string
+          maxLength: 1024
+          minLength: 1
+          title: Reason
+        revoked_by:
+          anyOf:
+          - type: string
+            maxLength: 256
+          - type: 'null'
+          title: Revoked By
+      type: object
+      required:
+      - reason
+      title: MediaRevokeRequest
+      description: Revoke a media certificate.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    MediaAttestResponse:
+      properties:
+        attestation_id:
+          type: string
+          title: Attestation Id
+        media_hash:
+          type: string
+          title: Media Hash
+        media_type:
+          type: string
+          title: Media Type
+        epoch:
+          type: integer
+          title: Epoch
+        hash_prev:
+          type: string
+          title: Hash Prev
+        hash_curr:
+          type: string
+          title: Hash Curr
+        pqc_block_ref:
+          type: string
+          minLength: 1
+          title: Pqc Block Ref
+          description: Post-quantum signature anchor reference. Always populated. See AttestResponse.pqc_block_ref / spec.md §16.7.
+        pqc_anchor:
+          $ref: '#/components/schemas/PQCAnchor'
+          description: Rich PQC anchor metadata. See spec.md §16.7.
+        certificate_id:
+          type: string
+          title: Certificate Id
+          description: Short ID for verification URLs
+        verification_url:
+          type: string
+          title: Verification Url
+        device_verified:
+          type: boolean
+          title: Device Verified
+          description: True if App Attest assertion was validated
+          default: false
+        chain_length:
+          type: integer
+          title: Chain Length
+        timestamp_utc:
+          type: string
+          title: Timestamp Utc
+        frame_count:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Frame Count
+          description: Number of per-frame hashes recorded
+        frame_root_hash:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Frame Root Hash
+          description: Merkle root of per-frame hashes
+        contract_versions:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Contract Versions
+          description: 'Surface version metadata for the contract this response participates in (issue #595). Optional + nullable so server can `exclude_none=True` from wire when omitted | preserves backwards-compat with strict (`extra=''forbid''`) SDK clients pinned to the pre-field schema.'
+      type: object
+      required:
+      - attestation_id
+      - media_hash
+      - media_type
+      - epoch
+      - hash_prev
+      - hash_curr
+      - pqc_block_ref
+      - pqc_anchor
+      - certificate_id
+      - verification_url
+      - chain_length
+      - timestamp_utc
+      title: MediaAttestResponse
+      description: 'PQC-signed media attestation certificate.
+
+
+        Carries the same PQC anchor contract as AttestResponse (spec.md §16.7):
+
+        ``pqc_block_ref`` is always non-empty; ``pqc_anchor`` is the rich
+
+        metadata for verifier consumption. Pre-2026-05-11 the field was
+
+        Optional and the router used response_model_exclude_none=True, so
+
+        the field disappeared from JSON on inter-block calls.'
+    DeviceInfo:
+      properties:
+        model:
+          type: string
+          maxLength: 256
+          minLength: 1
+          title: Model
+          description: Device model (e.g., 'iPhone 16 Pro')
+        os_version:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Os Version
+          description: OS version (e.g., 'iOS 18.3')
+        app_version:
+          type: string
+          maxLength: 32
+          minLength: 1
+          title: App Version
+          description: Kevros app version
+        device_id_hash:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Device Id Hash
+          description: SHA-256 of stable device identifier (privacy-preserving)
+      type: object
+      required:
+      - model
+      - os_version
+      - app_version
+      title: DeviceInfo
+      description: Device metadata for provenance context.
+    MediaVerifyRequest:
+      properties:
+        media_hash:
+          type: string
+          title: Media Hash
+          description: SHA-256 hex digest to verify against certificate
+        certificate_id:
+          type: string
+          maxLength: 32
+          minLength: 1
+          title: Certificate Id
+          description: Certificate ID from attestation
+      type: object
+      required:
+      - media_hash
+      - certificate_id
+      title: MediaVerifyRequest
+      description: Verify a media file against a certificate.
+    MediaVerifyResponse:
+      properties:
+        verified:
+          type: boolean
+          title: Verified
+        certificate_id:
+          type: string
+          title: Certificate Id
+        certificate_found:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Certificate Found
+          description: True when a certificate record exists, independent of media byte/hash verification
+        media_hash_checked:
+          type: boolean
+          title: Media Hash Checked
+          description: True only when the caller supplied a media hash for byte-level verification
+          default: false
+        media_hash_match:
+          type: boolean
+          title: Media Hash Match
+        chain_integrity:
+          type: boolean
+          title: Chain Integrity
+        pqc_signature_valid:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Pqc Signature Valid
+        certificate:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Certificate
+          description: Full certificate details when a certificate exists; byte verification is represented by verified/media_hash_checked
+        reason:
+          type: string
+          title: Reason
+          description: Human-readable verification result
+          default: ''
+        layers:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Layers
+          description: Layered machine-readable media authority verdicts
+        machine_action:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Machine Action
+          description: Suggested machine action for agent workflows
+        human_verdict:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Human Verdict
+          description: Short human-facing verdict for certificate pages
+        human_summary:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Human Summary
+          description: Plain-language summary for non-technical verifiers
+        agent_view:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Agent View
+          description: Compact machine-facing view derived from the same certificate
+        public_view:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Public View
+          description: Human-facing view metadata derived from the same certificate
+        contract_versions:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Contract Versions
+          description: 'Surface version metadata for the contract this response participates in (issue #595). Optional + nullable so server can `exclude_none=True` from wire when omitted | preserves backwards-compat with strict (`extra=''forbid''`) SDK clients pinned to the pre-field schema.'
+      type: object
+      required:
+      - verified
+      - certificate_id
+      - media_hash_match
+      - chain_integrity
+      title: MediaVerifyResponse
+      description: Result of media verification.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    PQCAnchor:
+      properties:
+        block_index:
+          type: integer
+          minimum: -1.0
+          title: Block Index
+          description: 0-indexed block number of the most recent signed block; -1 if no block has been signed yet
+        block_ref:
+          type: string
+          minLength: 1
+          title: Block Ref
+          description: 'Human-readable reference to the anchoring block signature. Form: ''block:<N>:sig:<hex16>...:policy:<policy>'' or ''pending:<chain_length>/<BLOCK_SIZE>'' before the first block.'
+        anchor_lag:
+          type: integer
+          exclusiveMaximum: 100.0
+          minimum: 0.0
+          title: Anchor Lag
+          description: Number of records since the last signed block boundary. Always 0 <= anchor_lag < BLOCK_SIZE (=100).
+        next_block_at:
+          type: integer
+          title: Next Block At
+          description: chain_length at which the next block signature will fire
+        signature_policy:
+          type: string
+          title: Signature Policy
+          description: 'Most-recent anchor block''s signature policy: ''ml_dsa_only'' (api_key/free/l402 rails), ''dual_pq'' (x402/MPP on-chain rails), or ''pending'' (no block signed yet)'
+        algorithm:
+          type: string
+          title: Algorithm
+          description: Primary signature algorithm (ML-DSA-87 = FIPS 204)
+        standard:
+          type: string
+          title: Standard
+          description: Primary signature standard (FIPS 204)
+        slh_dsa_present:
+          type: boolean
+          title: Slh Dsa Present
+          description: True if the anchor block also carries an SLH-DSA-SHA2-256f signature (FIPS 205). Required for dual_pq rails.
+      type: object
+      required:
+      - block_index
+      - block_ref
+      - anchor_lag
+      - next_block_at
+      - signature_policy
+      - algorithm
+      - standard
+      - slh_dsa_present
+      title: PQCAnchor
+      description: "Cryptographic anchor binding an attestation to a PQC-signed block.\n\nPer spec.md §16.7, every attestation response carries an anchor that\nreferences the most recent COMPLETED PQC block. Consumers verify:\n\n  * Records 0..(block_index+1)*BLOCK_SIZE-1 are covered by the\n    ML-DSA-87 (and optionally SLH-DSA-SHA2-256f) signature at\n    block_index.\n  * The current attestation extends the chain anchor_lag records\n    beyond the last signed boundary; the next block signature will\n    fire when chain_length reaches next_block_at.\n  * Before the first block boundary (chain_length < BLOCK_SIZE),\n    block_index = -1 and signature_policy = \"pending\"; the anchor\n    object is still emitted so the response shape is stable.\n\nThis contract is load-bearing for external claim verification\n(DOE Genesis, CVP, LM SBIR, marketplace cert reviewers)."
+    MediaApprovalRequest:
+      properties:
+        decision:
+          type: string
+          title: Decision
+          description: approved or denied
+          default: approved
+        approver:
+          anyOf:
+          - type: string
+            maxLength: 256
+            minLength: 1
+          - type: 'null'
+          title: Approver
+        reason:
+          anyOf:
+          - type: string
+            maxLength: 1024
+          - type: 'null'
+          title: Reason
+        campaign_id:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Campaign Id
+        brand_client:
+          anyOf:
+          - type: string
+            maxLength: 256
+          - type: 'null'
+          title: Brand Client
+        permitted_use:
+          anyOf:
+          - type: string
+            maxLength: 512
+          - type: 'null'
+          title: Permitted Use
+        territory:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Territory
+        expiry:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Expiry
+        policy_id:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Policy Id
+      type: object
+      title: MediaApprovalRequest
+      description: Operator approval or denial for a media certificate.
+    MediaType:
+      type: string
+      enum:
+      - PHOTO
+      - VIDEO
+      - AUDIO
+      - DOCUMENT
+      title: MediaType
+      description: Supported media types for attestation.
+    MediaAttestRequest:
+      properties:
+        agent_id:
+          type: string
+          title: Agent Id
+          description: Identifier of the requesting agent or user
+        media_hash:
+          type: string
+          title: Media Hash
+          description: SHA-256 hex digest of the media file bytes
+        media_type:
+          $ref: '#/components/schemas/MediaType'
+        media_size_bytes:
+          type: integer
+          maximum: 10737418240.0
+          exclusiveMinimum: 0.0
+          title: Media Size Bytes
+          description: File size in bytes (max 10 GB)
+        capture_timestamp_utc:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Capture Timestamp Utc
+          description: ISO 8601 timestamp of when the media was captured
+        capture_location:
+          anyOf:
+          - $ref: '#/components/schemas/CaptureLocation'
+          - type: 'null'
+        device_info:
+          anyOf:
+          - $ref: '#/components/schemas/DeviceInfo'
+          - type: 'null'
+        app_attest_assertion:
+          anyOf:
+          - type: string
+            maxLength: 4096
+          - type: 'null'
+          title: App Attest Assertion
+          description: Base64 Apple App Attest assertion (device integrity proof)
+        description:
+          anyOf:
+          - type: string
+            maxLength: 1024
+          - type: 'null'
+          title: Description
+        tags:
+          anyOf:
+          - items:
+              type: string
+            type: array
+            maxItems: 20
+          - type: 'null'
+          title: Tags
+        frame_hashes:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Frame Hashes
+          description: Per-frame SHA-256 hashes for video/live capture (streaming integrity)
+        c2pa_manifest_hash:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: C2Pa Manifest Hash
+          description: SHA-256 hex digest of the associated C2PA manifest, if present
+        campaign_id:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Campaign Id
+        brand_client:
+          anyOf:
+          - type: string
+            maxLength: 256
+          - type: 'null'
+          title: Brand Client
+        approver:
+          anyOf:
+          - type: string
+            maxLength: 256
+          - type: 'null'
+          title: Approver
+        permitted_use:
+          anyOf:
+          - type: string
+            maxLength: 512
+          - type: 'null'
+          title: Permitted Use
+        territory:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Territory
+        expiry:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Expiry
+        license_uri:
+          anyOf:
+          - type: string
+            maxLength: 512
+          - type: 'null'
+          title: License Uri
+        consent_assertion:
+          anyOf:
+          - type: string
+            maxLength: 512
+          - type: 'null'
+          title: Consent Assertion
+        model_provider:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Model Provider
+        model_id:
+          anyOf:
+          - type: string
+            maxLength: 256
+          - type: 'null'
+          title: Model Id
+        prompt_hash:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Prompt Hash
+          description: SHA-256 hex digest of the prompt or generation instruction, if applicable
+        policy_id:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Policy Id
+      type: object
+      required:
+      - agent_id
+      - media_hash
+      - media_type
+      - media_size_bytes
+      - capture_timestamp_utc
+      title: MediaAttestRequest
+      description: Request to attest a media file's integrity via its hash.
+    CaptureLocation:
+      properties:
+        latitude:
+          type: number
+          maximum: 90.0
+          minimum: -90.0
+          title: Latitude
+        longitude:
+          type: number
+          maximum: 180.0
+          minimum: -180.0
+          title: Longitude
+        altitude:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Altitude
+          description: Meters above sea level
+        accuracy:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Accuracy
+          description: GPS accuracy in meters
+      type: object
+      required:
+      - latitude
+      - longitude
+      title: CaptureLocation
+      description: GPS coordinates at time of capture.
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Get a trial key via POST /signup. 1,000-call trial allowance.
+x-refined-from:
+- taskhawktech-com-openapi.json
+- taskhawktech-com-openapi.yml
+x-service-info:
+  categories:
+  - ai
+  - security
+  - compliance
+  docs:
+    homepage: https://governance.taskhawktech.com
+    apiReference: https://governance.taskhawktech.com/openapi.json
+    llms: https://governance.taskhawktech.com/for-agents.txt
