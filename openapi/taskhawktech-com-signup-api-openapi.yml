@@ -1,7 +1,8 @@
 openapi: 3.2.0
 info:
-  title: Taskhawktech Com Signup API
-  version: 0.4.1
+  title: Kevros Governance Signup API
+  description: HTTP governance API for delegated requesters.
+  termsOfService: https://taskhawktech.com/legal/terms
   contact:
     name: TaskHawk Systems
     url: https://taskhawktech.com/contact
@@ -9,8 +10,7 @@ info:
   license:
     name: TaskHawk Terms
     url: https://taskhawktech.com/legal/terms
-  termsOfService: https://taskhawktech.com/legal/terms
-  description: 'Operations tagged signup across 2 of this provider''s published API definitions: taskhawktech-com-openapi.json, taskhawktech-com-openapi.yml. Each path carries the servers of the definition it was published in.'
+  version: 0.4.1
 servers:
 - url: https://governance.taskhawktech.com
   description: Production Gateway
@@ -77,9 +77,6 @@ paths:
         amount_unit: usd_cents
         settlement_signal: false
         revenue_signal: false
-    servers:
-    - url: https://governance.taskhawktech.com
-      description: Production Gateway
 components:
   schemas:
     HTTPValidationError:
@@ -200,9 +197,6 @@ components:
       in: header
       name: X-API-Key
       description: Get a trial key via POST /signup. 1,000-call trial allowance.
-x-refined-from:
-- taskhawktech-com-openapi.json
-- taskhawktech-com-openapi.yml
 x-service-info:
   categories:
   - ai

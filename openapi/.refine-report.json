@@ -1,8 +1,7 @@
 {
   "provider": "taskhawktech-com",
   "sources": [
-    "_original/taskhawktech-com-openapi.json",
-    "taskhawktech-com-openapi.yml"
+    "_original/taskhawktech-com-openapi.json"
   ],
   "outputs": [
     "taskhawktech-com-billing-api-openapi.yml",
@@ -11,23 +10,22 @@
     "taskhawktech-com-shield-api-openapi.yml",
     "taskhawktech-com-signup-api-openapi.yml"
   ],
-  "archived": [
-    "archived openapi/taskhawktech-com-openapi.yml"
-  ],
+  "archived": [],
   "errors": [],
   "warnings": [],
   "notes": [
+    "1 archived document(s) dropped as subsets of other archived documents",
     "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
     "taskhawktech-com-openapi.json: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
     "taskhawktech-com-openapi.json: declared missing tag: media",
-    "taskhawktech-com-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
-    "taskhawktech-com-openapi.yml: declared missing tag: media",
-    "tag 'billing' spans 2 source specs (taskhawktech-com-openapi.json, taskhawktech-com-openapi.yml): per-path servers applied",
-    "tag 'governance' spans 2 source specs (taskhawktech-com-openapi.json, taskhawktech-com-openapi.yml): per-path servers applied",
-    "tag 'media' spans 2 source specs (taskhawktech-com-openapi.json, taskhawktech-com-openapi.yml): per-path servers applied",
-    "tag 'shield' spans 2 source specs (taskhawktech-com-openapi.json, taskhawktech-com-openapi.yml): per-path servers applied",
-    "tag 'signup' spans 2 source specs (taskhawktech-com-openapi.json, taskhawktech-com-openapi.yml): per-path servers applied",
-    "apis.yml register: written (+5 apis, 6 total)"
+    "apis.yml register: already-registered"
   ],
-  "skipped": []
+  "skipped": [
+    "_original/taskhawktech-com-openapi.yml: archived document superseded by a larger archived document",
+    "taskhawktech-com-billing-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "taskhawktech-com-governance-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "taskhawktech-com-media-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "taskhawktech-com-shield-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "taskhawktech-com-signup-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
 }
