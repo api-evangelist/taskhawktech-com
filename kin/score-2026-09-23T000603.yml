@@ -1,0 +1,55 @@
+# Kin Score artifact — taskhawktech-com — 2026-09-23T000603
+# The API Evangelist rating (https://github.com/api-evangelist/kin-score). Generated; do not edit.
+---
+kin_score:
+  slug: taskhawktech-com
+  schema_version: 0.22.0
+  scored_at: '2026-09-23'
+  run_ts: 2026-09-23T000603
+  composite: 75.6
+  band: exemplar
+  facets:
+    discoverability: 75.9
+    contract_quality: 57.4
+    contract_governance: 18.2
+    operational_transparency: 78.9
+    developer_ergonomics: 63.7
+    access_clarity: 84.2
+  agent_readiness:
+    score: 48.8
+    band: agent-native
+    dimensions:
+      spec_presence: true
+      agentic_access: false
+      reversibility_documented: false
+      mcp_server: documented
+      auth_clarity: served
+      idempotency: verified
+      error_semantics: verified
+      openapi_examples: partial
+      rate_limit_signal: documented
+      event_surface_described: false
+      agent_skills: derived
+      well_known_catalog: false
+      consent_identity: false
+      agent_card: near-conformant
+      dry_run_mode: false
+      delegated_identity: served
+      protected_resource_metadata: false
+      dynamic_client_registration: false
+      agentic_commerce: false
+  regulatory:
+    applies: true
+    regime: Government & Public Sector
+    regime_id: government
+    score: 85.2
+    matched_via: tags
+  provenance:
+    mcp: first-party
+    skills: derived
+    conformance: first-party
+    contracts:
+      total: 1
+      derived: 0
+      coverage: 0.0
+      callable: 100.0

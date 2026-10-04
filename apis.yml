@@ -115,6 +115,8 @@ apis:
   humanURL: https://governance.taskhawktech.com/api
   baseURL: https://governance.taskhawktech.com
   tags:
+  - Billing
+  tags_raw:
   - billing
   properties:
   - type: OpenAPI
@@ -157,6 +159,8 @@ apis:
   humanURL: https://governance.taskhawktech.com/api
   baseURL: https://governance.taskhawktech.com
   tags:
+  - Governance
+  tags_raw:
   - governance
   properties:
   - type: OpenAPI
@@ -197,6 +201,8 @@ apis:
   humanURL: https://governance.taskhawktech.com/api
   baseURL: https://governance.taskhawktech.com
   tags:
+  - Media
+  tags_raw:
   - media
   properties:
   - type: OpenAPI
@@ -239,6 +245,8 @@ apis:
   humanURL: https://governance.taskhawktech.com/api
   baseURL: https://governance.taskhawktech.com
   tags:
+  - Shield
+  tags_raw:
   - shield
   properties:
   - type: OpenAPI
@@ -280,6 +288,8 @@ apis:
   humanURL: https://governance.taskhawktech.com/api
   baseURL: https://governance.taskhawktech.com
   tags:
+  - Sign Up
+  tags_raw:
   - signup
   properties:
   - type: OpenAPI
