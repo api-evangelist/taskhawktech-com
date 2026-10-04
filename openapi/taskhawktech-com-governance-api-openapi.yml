@@ -523,16 +523,6 @@ components:
       - bundle_available
       title: MPPCloseResponse
       description: Session close confirmation.
-    IntentSource:
-      type: string
-      enum:
-      - HUMAN_OPERATOR
-      - AI_PLANNER
-      - MISSION_SCRIPT
-      - REMOTE_API
-      - SENSOR_TRIGGER
-      - INTERNAL
-      title: IntentSource
     BindIntentRequest:
       properties:
         agent_id:
@@ -590,250 +580,188 @@ components:
       - command_payload
       title: BindIntentRequest
       description: Declare an intent and bind it to a command.
-    MPPSessionResponse:
+    MPPCloseRequest:
       properties:
         session_id:
           type: string
           title: Session Id
-        decision:
+          description: Session to close
+        agent_id:
           type: string
-          title: Decision
-        session_token:
-          type: string
-          title: Session Token
-        budget_cents:
+          title: Agent Id
+          description: Agent closing the session
+        final_spent_cents:
           type: integer
-          title: Budget Cents
+          minimum: 0.0
+          title: Final Spent Cents
+        final_transactions_count:
+          type: integer
+          minimum: 0.0
+          title: Final Transactions Count
+        close_reason:
+          type: string
+          title: Close Reason
+          description: completed, budget_exhausted, timeout, drift_detected, agent_requested
+          default: completed
+      type: object
+      required:
+      - session_id
+      - agent_id
+      - final_spent_cents
+      - final_transactions_count
+      title: MPPCloseRequest
+      description: Close a streaming payment session.
+    RiskCategory:
+      type: string
+      enum:
+      - MINIMAL
+      - LIMITED
+      - HIGH
+      - UNACCEPTABLE
+      title: RiskCategory
+      description: EU AI Act Annex III risk classification for AI systems.
+    BundleResponse:
+      properties:
+        bundle_id:
+          type: string
+          title: Bundle Id
+        agent_id:
+          type: string
+          title: Agent Id
+        record_count:
+          type: integer
+          title: Record Count
+        truncated:
+          type: boolean
+          title: Truncated
+          description: Whether records were truncated by max_records limit
+          default: false
+        chain_integrity:
+          type: boolean
+          title: Chain Integrity
+          description: Whether the hash chain is intact end-to-end
+        time_range:
+          additionalProperties:
+            type: string
+          type: object
+          title: Time Range
+        records:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Records
+        intent_chains:
+          anyOf:
+          - items:
+              additionalProperties: true
+              type: object
+            type: array
+          - type: 'null'
+          title: Intent Chains
+        pqc_signatures:
+          anyOf:
+          - items:
+              additionalProperties: true
+              type: object
+            type: array
+          - type: 'null'
+          title: Pqc Signatures
+        verification_instructions:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Verification Instructions
+          description: How a third party can independently verify this bundle
+        bundle_hash:
+          type: string
+          title: Bundle Hash
+          description: SHA-256 of the entire bundle (for integrity checking)
+        timestamp_utc:
+          type: string
+          title: Timestamp Utc
+        contract_versions:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Contract Versions
+          description: 'Surface version metadata for the contract this response participates in (issue #595). Optional + nullable so server can `exclude_none=True` from wire when omitted | preserves backwards-compat with strict (`extra=''forbid''`) SDK clients pinned to the pre-field schema.'
+      type: object
+      required:
+      - bundle_id
+      - agent_id
+      - record_count
+      - chain_integrity
+      - time_range
+      - records
+      - bundle_hash
+      - timestamp_utc
+      title: BundleResponse
+      description: Certifier-grade compliance evidence bundle.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    MPPSessionRequest:
+      properties:
+        agent_id:
+          type: string
+          title: Agent Id
+          description: Agent requesting the session
+        session_budget_cents:
+          type: integer
+          maximum: 10000000.0
+          minimum: 1.0
+          title: Session Budget Cents
+          description: Maximum session spend in cents
         duration_seconds:
           type: integer
+          maximum: 86400.0
+          minimum: 60.0
           title: Duration Seconds
-        rate_limit_cents_per_minute:
+          description: Session duration (60s to 24h)
+        spending_rate_limit_cents_per_minute:
           type: integer
-          title: Rate Limit Cents Per Minute
+          maximum: 100000.0
+          minimum: 1.0
+          title: Spending Rate Limit Cents Per Minute
+          description: Max spend rate per minute in cents
+          default: 500
         allowed_services:
           items:
             type: string
           type: array
           title: Allowed Services
-        expires_at:
+          description: Allowed service categories
+        payment_rail:
           type: string
-          title: Expires At
-        provenance_hash:
-          type: string
-          title: Provenance Hash
+          title: Payment Rail
+          description: 'Payment rail: stripe, x402, tempo'
+          default: stripe
       type: object
       required:
-      - session_id
-      - decision
-      - session_token
-      - budget_cents
+      - agent_id
+      - session_budget_cents
       - duration_seconds
-      - rate_limit_cents_per_minute
-      - allowed_services
-      - expires_at
-      - provenance_hash
-      title: MPPSessionResponse
-      description: Authorized MPP session details.
-    BundleRequest:
-      properties:
-        agent_id:
-          type: string
-          title: Agent Id
-        time_range_start:
-          anyOf:
-          - type: string
-            maxLength: 64
-          - type: 'null'
-          title: Time Range Start
-          description: 'ISO 8601 start of range (default: last 24h)'
-        time_range_end:
-          anyOf:
-          - type: string
-            maxLength: 64
-          - type: 'null'
-          title: Time Range End
-          description: 'ISO 8601 end of range (default: now)'
-        max_records:
-          type: integer
-          maximum: 100000.0
-          minimum: 1.0
-          title: Max Records
-          description: Maximum records to include (pagination limit)
-          default: 10000
-        include_intent_chains:
-          type: boolean
-          title: Include Intent Chains
-          default: true
-        include_pqc_signatures:
-          type: boolean
-          title: Include Pqc Signatures
-          default: true
-        include_verification_instructions:
-          type: boolean
-          title: Include Verification Instructions
-          default: true
-      type: object
-      required:
-      - agent_id
-      title: BundleRequest
-      description: Request a certifier-grade compliance evidence bundle.
-    VerifyRequest:
-      properties:
-        action_type:
-          type: string
-          maxLength: 128
-          minLength: 1
-          title: Action Type
-          description: Type of action being verified (e.g., 'motor_command', 'api_call', 'transaction')
-        action_payload:
-          additionalProperties: true
-          type: object
-          title: Action Payload
-          description: The action to verify - contents depend on action_type
-        policy_context:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Policy Context
-          description: Optional policy constraints (max values, allowed ranges, etc.)
-        template_id:
-          anyOf:
-          - type: string
-            maxLength: 64
-          - type: 'null'
-          title: Template Id
-          description: Named policy template (e.g., 'robotics-arm', 'financial-transaction'). Merged with policy_context - agent-supplied values override template defaults.
-        agent_id:
-          type: string
-          title: Agent Id
-          description: Identifier of the requesting agent
-        idempotency_key:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Idempotency Key
-          description: Idempotency key for retry safety
-        cmd_id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Cmd Id
-          description: Command ID for replay protection. Auto-generated by SDK if not provided. Server rejects duplicate cmd_ids within the replay window.
-        risk_category:
-          anyOf:
-          - $ref: '#/components/schemas/RiskCategory'
-          - type: 'null'
-          description: EU AI Act risk classification (MINIMAL, LIMITED, HIGH, UNACCEPTABLE). Recorded in provenance for regulatory compliance tagging.
-      type: object
-      required:
-      - action_type
-      - action_payload
-      - agent_id
-      title: VerifyRequest
-      description: Request to verify an action against policy bounds.
-    EnforcementMode:
-      type: string
-      enum:
-      - enforce
-      - advisory
-      - deny
-      - gated
-      title: EnforcementMode
-    OutcomeStatus:
-      type: string
-      enum:
-      - ACHIEVED
-      - PARTIALLY_ACHIEVED
-      - FAILED
-      - BLOCKED
-      - TIMEOUT
-      title: OutcomeStatus
-    PQCAnchor:
-      properties:
-        block_index:
-          type: integer
-          minimum: -1.0
-          title: Block Index
-          description: 0-indexed block number of the most recent signed block; -1 if no block has been signed yet
-        block_ref:
-          type: string
-          minLength: 1
-          title: Block Ref
-          description: 'Human-readable reference to the anchoring block signature. Form: ''block:<N>:sig:<hex16>...:policy:<policy>'' or ''pending:<chain_length>/<BLOCK_SIZE>'' before the first block.'
-        anchor_lag:
-          type: integer
-          exclusiveMaximum: 100.0
-          minimum: 0.0
-          title: Anchor Lag
-          description: Number of records since the last signed block boundary. Always 0 <= anchor_lag < BLOCK_SIZE (=100).
-        next_block_at:
-          type: integer
-          title: Next Block At
-          description: chain_length at which the next block signature will fire
-        signature_policy:
-          type: string
-          title: Signature Policy
-          description: 'Most-recent anchor block''s signature policy: ''ml_dsa_only'' (api_key/free/l402 rails), ''dual_pq'' (x402/MPP on-chain rails), or ''pending'' (no block signed yet)'
-        algorithm:
-          type: string
-          title: Algorithm
-          description: Primary signature algorithm (ML-DSA-87 = FIPS 204)
-        standard:
-          type: string
-          title: Standard
-          description: Primary signature standard (FIPS 204)
-        slh_dsa_present:
-          type: boolean
-          title: Slh Dsa Present
-          description: True if the anchor block also carries an SLH-DSA-SHA2-256f signature (FIPS 205). Required for dual_pq rails.
-      type: object
-      required:
-      - block_index
-      - block_ref
-      - anchor_lag
-      - next_block_at
-      - signature_policy
-      - algorithm
-      - standard
-      - slh_dsa_present
-      title: PQCAnchor
-      description: "Cryptographic anchor binding an attestation to a PQC-signed block.\n\nPer spec.md §16.7, every attestation response carries an anchor that\nreferences the most recent COMPLETED PQC block. Consumers verify:\n\n  * Records 0..(block_index+1)*BLOCK_SIZE-1 are covered by the\n    ML-DSA-87 (and optionally SLH-DSA-SHA2-256f) signature at\n    block_index.\n  * The current attestation extends the chain anchor_lag records\n    beyond the last signed boundary; the next block signature will\n    fire when chain_length reaches next_block_at.\n  * Before the first block boundary (chain_length < BLOCK_SIZE),\n    block_index = -1 and signature_policy = \"pending\"; the anchor\n    object is still emitted so the response shape is stable.\n\nThis contract is load-bearing for external claim verification\n(DOE Genesis, CVP, LM SBIR, marketplace cert reviewers)."
-    MPPHeartbeatResponse:
-      properties:
-        session_id:
-          type: string
-          title: Session Id
-        status:
-          type: string
-          title: Status
-        budget_remaining_cents:
-          type: integer
-          title: Budget Remaining Cents
-        time_remaining_seconds:
-          type: integer
-          title: Time Remaining Seconds
-        drift_detected:
-          type: boolean
-          title: Drift Detected
-        drift_reason:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Drift Reason
-        provenance_hash:
-          type: string
-          title: Provenance Hash
-      type: object
-      required:
-      - session_id
-      - status
-      - budget_remaining_cents
-      - time_remaining_seconds
-      - drift_detected
-      - provenance_hash
-      title: MPPHeartbeatResponse
-      description: Heartbeat drift check result.
+      title: MPPSessionRequest
+      description: Authorize a new MPP streaming payment session.
+      example:
+        agent_id: agent-001
+        allowed_services:
+        - inference
+        - storage
+        - compute
+        duration_seconds: 3600
+        payment_rail: stripe
+        session_budget_cents: 50000
+        spending_rate_limit_cents_per_minute: 500
     VerifyResponse:
       properties:
         decision:
@@ -917,6 +845,106 @@ components:
       - provenance_hash
       title: VerifyResponse
       description: Signed verification decision.
+    PQCAnchor:
+      properties:
+        block_index:
+          type: integer
+          minimum: -1.0
+          title: Block Index
+          description: 0-indexed block number of the most recent signed block; -1 if no block has been signed yet
+        block_ref:
+          type: string
+          minLength: 1
+          title: Block Ref
+          description: 'Human-readable reference to the anchoring block signature. Form: ''block:<N>:sig:<hex16>...:policy:<policy>'' or ''pending:<chain_length>/<BLOCK_SIZE>'' before the first block.'
+        anchor_lag:
+          type: integer
+          exclusiveMaximum: 100.0
+          minimum: 0.0
+          title: Anchor Lag
+          description: Number of records since the last signed block boundary. Always 0 <= anchor_lag < BLOCK_SIZE (=100).
+        next_block_at:
+          type: integer
+          title: Next Block At
+          description: chain_length at which the next block signature will fire
+        signature_policy:
+          type: string
+          title: Signature Policy
+          description: 'Most-recent anchor block''s signature policy: ''ml_dsa_only'' (api_key/free/l402 rails), ''dual_pq'' (x402/MPP on-chain rails), or ''pending'' (no block signed yet)'
+        algorithm:
+          type: string
+          title: Algorithm
+          description: Primary signature algorithm (ML-DSA-87 = FIPS 204)
+        standard:
+          type: string
+          title: Standard
+          description: Primary signature standard (FIPS 204)
+        slh_dsa_present:
+          type: boolean
+          title: Slh Dsa Present
+          description: True if the anchor block also carries an SLH-DSA-SHA2-256f signature (FIPS 205). Required for dual_pq rails.
+      type: object
+      required:
+      - block_index
+      - block_ref
+      - anchor_lag
+      - next_block_at
+      - signature_policy
+      - algorithm
+      - standard
+      - slh_dsa_present
+      title: PQCAnchor
+      description: "Cryptographic anchor binding an attestation to a PQC-signed block.\n\nPer spec.md §16.7, every attestation response carries an anchor that\nreferences the most recent COMPLETED PQC block. Consumers verify:\n\n  * Records 0..(block_index+1)*BLOCK_SIZE-1 are covered by the\n    ML-DSA-87 (and optionally SLH-DSA-SHA2-256f) signature at\n    block_index.\n  * The current attestation extends the chain anchor_lag records\n    beyond the last signed boundary; the next block signature will\n    fire when chain_length reaches next_block_at.\n  * Before the first block boundary (chain_length < BLOCK_SIZE),\n    block_index = -1 and signature_policy = \"pending\"; the anchor\n    object is still emitted so the response shape is stable.\n\nThis contract is load-bearing for external claim verification\n(DOE Genesis, CVP, LM SBIR, marketplace cert reviewers)."
+    Decision:
+      type: string
+      enum:
+      - ALLOW
+      - CONSTRAIN
+      - DENY
+      title: Decision
+    BundleRequest:
+      properties:
+        agent_id:
+          type: string
+          title: Agent Id
+        time_range_start:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Time Range Start
+          description: 'ISO 8601 start of range (default: last 24h)'
+        time_range_end:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Time Range End
+          description: 'ISO 8601 end of range (default: now)'
+        max_records:
+          type: integer
+          maximum: 100000.0
+          minimum: 1.0
+          title: Max Records
+          description: Maximum records to include (pagination limit)
+          default: 10000
+        include_intent_chains:
+          type: boolean
+          title: Include Intent Chains
+          default: true
+        include_pqc_signatures:
+          type: boolean
+          title: Include Pqc Signatures
+          default: true
+        include_verification_instructions:
+          type: boolean
+          title: Include Verification Instructions
+          default: true
+      type: object
+      required:
+      - agent_id
+      title: BundleRequest
+      description: Request a certifier-grade compliance evidence bundle.
     BindIntentResponse:
       properties:
         intent_id:
@@ -961,258 +989,19 @@ components:
       - timestamp_utc
       title: BindIntentResponse
       description: Cryptographic intent binding.
-    RiskCategory:
+    IntentType:
       type: string
       enum:
-      - MINIMAL
-      - LIMITED
-      - HIGH
-      - UNACCEPTABLE
-      title: RiskCategory
-      description: EU AI Act Annex III risk classification for AI systems.
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    AttestRequest:
-      properties:
-        agent_id:
-          type: string
-          title: Agent Id
-        action_description:
-          type: string
-          maxLength: 2048
-          minLength: 1
-          title: Action Description
-          description: What the agent did
-        action_payload:
-          additionalProperties: true
-          type: object
-          title: Action Payload
-          description: Full action details for the record
-        context:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Context
-          description: Additional context (environment, state, etc.)
-        prior_attestation_hash:
-          anyOf:
-          - type: string
-            maxLength: 128
-          - type: 'null'
-          title: Prior Attestation Hash
-          description: Hash of the agent's prior attestation (for agent-side chain continuity)
-        cmd_id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Cmd Id
-          description: Command ID for replay protection. Auto-generated by SDK if not provided.
-        risk_category:
-          anyOf:
-          - $ref: '#/components/schemas/RiskCategory'
-          - type: 'null'
-          description: EU AI Act risk classification for this attestation record.
-      type: object
-      required:
-      - agent_id
-      - action_description
-      - action_payload
-      title: AttestRequest
-      description: Request to create a hash-chained provenance attestation.
-    VerifyOutcomeResponse:
-      properties:
-        verification_id:
-          type: string
-          title: Verification Id
-        intent_id:
-          type: string
-          title: Intent Id
-        status:
-          $ref: '#/components/schemas/OutcomeStatus'
-        achieved_percentage:
-          type: number
-          title: Achieved Percentage
-        discrepancy:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Discrepancy
-        evidence_hash:
-          type: string
-          title: Evidence Hash
-        timestamp_utc:
-          type: string
-          title: Timestamp Utc
-        contract_versions:
-          anyOf:
-          - additionalProperties:
-              type: string
-            type: object
-          - type: 'null'
-          title: Contract Versions
-          description: 'Surface version metadata for the contract this response participates in (issue #595). Optional + nullable so server can `exclude_none=True` from wire when omitted | preserves backwards-compat with strict (`extra=''forbid''`) SDK clients pinned to the pre-field schema.'
-      type: object
-      required:
-      - verification_id
-      - intent_id
-      - status
-      - achieved_percentage
-      - evidence_hash
-      - timestamp_utc
-      title: VerifyOutcomeResponse
-      description: Outcome verification result.
-    VerifyOutcomeRequest:
-      properties:
-        agent_id:
-          type: string
-          title: Agent Id
-        intent_id:
-          type: string
-          maxLength: 256
-          title: Intent Id
-        binding_id:
-          type: string
-          maxLength: 256
-          title: Binding Id
-        actual_state:
-          additionalProperties: true
-          type: object
-          title: Actual State
-          description: The state after action execution
-        tolerance:
-          type: number
-          maximum: 1.0
-          minimum: 0.0
-          title: Tolerance
-          description: Acceptable deviation from goal state (0=exact, 1=any)
-          default: 0.1
-      type: object
-      required:
-      - agent_id
-      - intent_id
-      - binding_id
-      - actual_state
-      title: VerifyOutcomeRequest
-      description: Verify that an action achieved its declared intent.
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    MPPSessionRequest:
-      properties:
-        agent_id:
-          type: string
-          title: Agent Id
-          description: Agent requesting the session
-        session_budget_cents:
-          type: integer
-          maximum: 10000000.0
-          minimum: 1.0
-          title: Session Budget Cents
-          description: Maximum session spend in cents
-        duration_seconds:
-          type: integer
-          maximum: 86400.0
-          minimum: 60.0
-          title: Duration Seconds
-          description: Session duration (60s to 24h)
-        spending_rate_limit_cents_per_minute:
-          type: integer
-          maximum: 100000.0
-          minimum: 1.0
-          title: Spending Rate Limit Cents Per Minute
-          description: Max spend rate per minute in cents
-          default: 500
-        allowed_services:
-          items:
-            type: string
-          type: array
-          title: Allowed Services
-          description: Allowed service categories
-        payment_rail:
-          type: string
-          title: Payment Rail
-          description: 'Payment rail: stripe, x402, tempo'
-          default: stripe
-      type: object
-      required:
-      - agent_id
-      - session_budget_cents
-      - duration_seconds
-      title: MPPSessionRequest
-      description: Authorize a new MPP streaming payment session.
-      example:
-        agent_id: agent-001
-        allowed_services:
-        - inference
-        - storage
-        - compute
-        duration_seconds: 3600
-        payment_rail: stripe
-        session_budget_cents: 50000
-        spending_rate_limit_cents_per_minute: 500
-    MPPCloseRequest:
-      properties:
-        session_id:
-          type: string
-          title: Session Id
-          description: Session to close
-        agent_id:
-          type: string
-          title: Agent Id
-          description: Agent closing the session
-        final_spent_cents:
-          type: integer
-          minimum: 0.0
-          title: Final Spent Cents
-        final_transactions_count:
-          type: integer
-          minimum: 0.0
-          title: Final Transactions Count
-        close_reason:
-          type: string
-          title: Close Reason
-          description: completed, budget_exhausted, timeout, drift_detected, agent_requested
-          default: completed
-      type: object
-      required:
-      - session_id
-      - agent_id
-      - final_spent_cents
-      - final_transactions_count
-      title: MPPCloseRequest
-      description: Close a streaming payment session.
+      - NAVIGATION
+      - MANIPULATION
+      - SENSING
+      - COMMUNICATION
+      - MAINTENANCE
+      - EMERGENCY
+      - OPERATOR_COMMAND
+      - AI_GENERATED
+      - AUTOMATED
+      title: IntentType
     AttestResponse:
       properties:
         attestation_id:
@@ -1284,6 +1073,226 @@ components:
         the first block). The new ``pqc_anchor`` field gives rich metadata
 
         for verifier consumption. Field shape is documented in spec.md §16.7.'
+    OutcomeStatus:
+      type: string
+      enum:
+      - ACHIEVED
+      - PARTIALLY_ACHIEVED
+      - FAILED
+      - BLOCKED
+      - TIMEOUT
+      title: OutcomeStatus
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    IntentSource:
+      type: string
+      enum:
+      - HUMAN_OPERATOR
+      - AI_PLANNER
+      - MISSION_SCRIPT
+      - REMOTE_API
+      - SENSOR_TRIGGER
+      - INTERNAL
+      title: IntentSource
+    MPPSessionResponse:
+      properties:
+        session_id:
+          type: string
+          title: Session Id
+        decision:
+          type: string
+          title: Decision
+        session_token:
+          type: string
+          title: Session Token
+        budget_cents:
+          type: integer
+          title: Budget Cents
+        duration_seconds:
+          type: integer
+          title: Duration Seconds
+        rate_limit_cents_per_minute:
+          type: integer
+          title: Rate Limit Cents Per Minute
+        allowed_services:
+          items:
+            type: string
+          type: array
+          title: Allowed Services
+        expires_at:
+          type: string
+          title: Expires At
+        provenance_hash:
+          type: string
+          title: Provenance Hash
+      type: object
+      required:
+      - session_id
+      - decision
+      - session_token
+      - budget_cents
+      - duration_seconds
+      - rate_limit_cents_per_minute
+      - allowed_services
+      - expires_at
+      - provenance_hash
+      title: MPPSessionResponse
+      description: Authorized MPP session details.
+    VerifyOutcomeRequest:
+      properties:
+        agent_id:
+          type: string
+          title: Agent Id
+        intent_id:
+          type: string
+          maxLength: 256
+          title: Intent Id
+        binding_id:
+          type: string
+          maxLength: 256
+          title: Binding Id
+        actual_state:
+          additionalProperties: true
+          type: object
+          title: Actual State
+          description: The state after action execution
+        tolerance:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Tolerance
+          description: Acceptable deviation from goal state (0=exact, 1=any)
+          default: 0.1
+      type: object
+      required:
+      - agent_id
+      - intent_id
+      - binding_id
+      - actual_state
+      title: VerifyOutcomeRequest
+      description: Verify that an action achieved its declared intent.
+    VerifyRequest:
+      properties:
+        action_type:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Action Type
+          description: Type of action being verified (e.g., 'motor_command', 'api_call', 'transaction')
+        action_payload:
+          additionalProperties: true
+          type: object
+          title: Action Payload
+          description: The action to verify - contents depend on action_type
+        policy_context:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Policy Context
+          description: Optional policy constraints (max values, allowed ranges, etc.)
+        template_id:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Template Id
+          description: Named policy template (e.g., 'robotics-arm', 'financial-transaction'). Merged with policy_context - agent-supplied values override template defaults.
+        agent_id:
+          type: string
+          title: Agent Id
+          description: Identifier of the requesting agent
+        idempotency_key:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency Key
+          description: Idempotency key for retry safety
+        cmd_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cmd Id
+          description: Command ID for replay protection. Auto-generated by SDK if not provided. Server rejects duplicate cmd_ids within the replay window.
+        risk_category:
+          anyOf:
+          - $ref: '#/components/schemas/RiskCategory'
+          - type: 'null'
+          description: EU AI Act risk classification (MINIMAL, LIMITED, HIGH, UNACCEPTABLE). Recorded in provenance for regulatory compliance tagging.
+      type: object
+      required:
+      - action_type
+      - action_payload
+      - agent_id
+      title: VerifyRequest
+      description: Request to verify an action against policy bounds.
+    VerifyOutcomeResponse:
+      properties:
+        verification_id:
+          type: string
+          title: Verification Id
+        intent_id:
+          type: string
+          title: Intent Id
+        status:
+          $ref: '#/components/schemas/OutcomeStatus'
+        achieved_percentage:
+          type: number
+          title: Achieved Percentage
+        discrepancy:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Discrepancy
+        evidence_hash:
+          type: string
+          title: Evidence Hash
+        timestamp_utc:
+          type: string
+          title: Timestamp Utc
+        contract_versions:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Contract Versions
+          description: 'Surface version metadata for the contract this response participates in (issue #595). Optional + nullable so server can `exclude_none=True` from wire when omitted | preserves backwards-compat with strict (`extra=''forbid''`) SDK clients pinned to the pre-field schema.'
+      type: object
+      required:
+      - verification_id
+      - intent_id
+      - status
+      - achieved_percentage
+      - evidence_hash
+      - timestamp_utc
+      title: VerifyOutcomeResponse
+      description: Outcome verification result.
     MPPHeartbeatRequest:
       properties:
         session_id:
@@ -1322,106 +1331,97 @@ components:
       - spending_rate_cents_per_minute
       title: MPPHeartbeatRequest
       description: Mid-session drift check during streaming payments.
-    BundleResponse:
+    MPPHeartbeatResponse:
       properties:
-        bundle_id:
+        session_id:
           type: string
-          title: Bundle Id
-        agent_id:
+          title: Session Id
+        status:
           type: string
-          title: Agent Id
-        record_count:
+          title: Status
+        budget_remaining_cents:
           type: integer
-          title: Record Count
-        truncated:
+          title: Budget Remaining Cents
+        time_remaining_seconds:
+          type: integer
+          title: Time Remaining Seconds
+        drift_detected:
           type: boolean
-          title: Truncated
-          description: Whether records were truncated by max_records limit
-          default: false
-        chain_integrity:
-          type: boolean
-          title: Chain Integrity
-          description: Whether the hash chain is intact end-to-end
-        time_range:
-          additionalProperties:
-            type: string
-          type: object
-          title: Time Range
-        records:
-          items:
-            additionalProperties: true
-            type: object
-          type: array
-          title: Records
-        intent_chains:
-          anyOf:
-          - items:
-              additionalProperties: true
-              type: object
-            type: array
-          - type: 'null'
-          title: Intent Chains
-        pqc_signatures:
-          anyOf:
-          - items:
-              additionalProperties: true
-              type: object
-            type: array
-          - type: 'null'
-          title: Pqc Signatures
-        verification_instructions:
+          title: Drift Detected
+        drift_reason:
           anyOf:
           - type: string
           - type: 'null'
-          title: Verification Instructions
-          description: How a third party can independently verify this bundle
-        bundle_hash:
+          title: Drift Reason
+        provenance_hash:
           type: string
-          title: Bundle Hash
-          description: SHA-256 of the entire bundle (for integrity checking)
-        timestamp_utc:
-          type: string
-          title: Timestamp Utc
-        contract_versions:
-          anyOf:
-          - additionalProperties:
-              type: string
-            type: object
-          - type: 'null'
-          title: Contract Versions
-          description: 'Surface version metadata for the contract this response participates in (issue #595). Optional + nullable so server can `exclude_none=True` from wire when omitted | preserves backwards-compat with strict (`extra=''forbid''`) SDK clients pinned to the pre-field schema.'
+          title: Provenance Hash
       type: object
       required:
-      - bundle_id
+      - session_id
+      - status
+      - budget_remaining_cents
+      - time_remaining_seconds
+      - drift_detected
+      - provenance_hash
+      title: MPPHeartbeatResponse
+      description: Heartbeat drift check result.
+    EnforcementMode:
+      type: string
+      enum:
+      - enforce
+      - advisory
+      - deny
+      - gated
+      title: EnforcementMode
+    AttestRequest:
+      properties:
+        agent_id:
+          type: string
+          title: Agent Id
+        action_description:
+          type: string
+          maxLength: 2048
+          minLength: 1
+          title: Action Description
+          description: What the agent did
+        action_payload:
+          additionalProperties: true
+          type: object
+          title: Action Payload
+          description: Full action details for the record
+        context:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Context
+          description: Additional context (environment, state, etc.)
+        prior_attestation_hash:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Prior Attestation Hash
+          description: Hash of the agent's prior attestation (for agent-side chain continuity)
+        cmd_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cmd Id
+          description: Command ID for replay protection. Auto-generated by SDK if not provided.
+        risk_category:
+          anyOf:
+          - $ref: '#/components/schemas/RiskCategory'
+          - type: 'null'
+          description: EU AI Act risk classification for this attestation record.
+      type: object
+      required:
       - agent_id
-      - record_count
-      - chain_integrity
-      - time_range
-      - records
-      - bundle_hash
-      - timestamp_utc
-      title: BundleResponse
-      description: Certifier-grade compliance evidence bundle.
-    Decision:
-      type: string
-      enum:
-      - ALLOW
-      - CONSTRAIN
-      - DENY
-      title: Decision
-    IntentType:
-      type: string
-      enum:
-      - NAVIGATION
-      - MANIPULATION
-      - SENSING
-      - COMMUNICATION
-      - MAINTENANCE
-      - EMERGENCY
-      - OPERATOR_COMMAND
-      - AI_GENERATED
-      - AUTOMATED
-      title: IntentType
+      - action_description
+      - action_payload
+      title: AttestRequest
+      description: Request to create a hash-chained provenance attestation.
   securitySchemes:
     ApiKeyAuth:
       type: apiKey

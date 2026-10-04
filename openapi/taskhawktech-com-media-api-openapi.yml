@@ -352,172 +352,6 @@ paths:
         revenue_signal: false
 components:
   schemas:
-    PQCAnchor:
-      properties:
-        block_index:
-          type: integer
-          minimum: -1.0
-          title: Block Index
-          description: 0-indexed block number of the most recent signed block; -1 if no block has been signed yet
-        block_ref:
-          type: string
-          minLength: 1
-          title: Block Ref
-          description: 'Human-readable reference to the anchoring block signature. Form: ''block:<N>:sig:<hex16>...:policy:<policy>'' or ''pending:<chain_length>/<BLOCK_SIZE>'' before the first block.'
-        anchor_lag:
-          type: integer
-          exclusiveMaximum: 100.0
-          minimum: 0.0
-          title: Anchor Lag
-          description: Number of records since the last signed block boundary. Always 0 <= anchor_lag < BLOCK_SIZE (=100).
-        next_block_at:
-          type: integer
-          title: Next Block At
-          description: chain_length at which the next block signature will fire
-        signature_policy:
-          type: string
-          title: Signature Policy
-          description: 'Most-recent anchor block''s signature policy: ''ml_dsa_only'' (api_key/free/l402 rails), ''dual_pq'' (x402/MPP on-chain rails), or ''pending'' (no block signed yet)'
-        algorithm:
-          type: string
-          title: Algorithm
-          description: Primary signature algorithm (ML-DSA-87 = FIPS 204)
-        standard:
-          type: string
-          title: Standard
-          description: Primary signature standard (FIPS 204)
-        slh_dsa_present:
-          type: boolean
-          title: Slh Dsa Present
-          description: True if the anchor block also carries an SLH-DSA-SHA2-256f signature (FIPS 205). Required for dual_pq rails.
-      type: object
-      required:
-      - block_index
-      - block_ref
-      - anchor_lag
-      - next_block_at
-      - signature_policy
-      - algorithm
-      - standard
-      - slh_dsa_present
-      title: PQCAnchor
-      description: "Cryptographic anchor binding an attestation to a PQC-signed block.\n\nPer spec.md §16.7, every attestation response carries an anchor that\nreferences the most recent COMPLETED PQC block. Consumers verify:\n\n  * Records 0..(block_index+1)*BLOCK_SIZE-1 are covered by the\n    ML-DSA-87 (and optionally SLH-DSA-SHA2-256f) signature at\n    block_index.\n  * The current attestation extends the chain anchor_lag records\n    beyond the last signed boundary; the next block signature will\n    fire when chain_length reaches next_block_at.\n  * Before the first block boundary (chain_length < BLOCK_SIZE),\n    block_index = -1 and signature_policy = \"pending\"; the anchor\n    object is still emitted so the response shape is stable.\n\nThis contract is load-bearing for external claim verification\n(DOE Genesis, CVP, LM SBIR, marketplace cert reviewers)."
-    MediaVerifyResponse:
-      properties:
-        verified:
-          type: boolean
-          title: Verified
-        certificate_id:
-          type: string
-          title: Certificate Id
-        certificate_found:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Certificate Found
-          description: True when a certificate record exists, independent of media byte/hash verification
-        media_hash_checked:
-          type: boolean
-          title: Media Hash Checked
-          description: True only when the caller supplied a media hash for byte-level verification
-          default: false
-        media_hash_match:
-          type: boolean
-          title: Media Hash Match
-        chain_integrity:
-          type: boolean
-          title: Chain Integrity
-        pqc_signature_valid:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Pqc Signature Valid
-        certificate:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Certificate
-          description: Full certificate details when a certificate exists; byte verification is represented by verified/media_hash_checked
-        reason:
-          type: string
-          title: Reason
-          description: Human-readable verification result
-          default: ''
-        layers:
-          anyOf:
-          - additionalProperties:
-              type: string
-            type: object
-          - type: 'null'
-          title: Layers
-          description: Layered machine-readable media authority verdicts
-        machine_action:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Machine Action
-          description: Suggested machine action for agent workflows
-        human_verdict:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Human Verdict
-          description: Short human-facing verdict for certificate pages
-        human_summary:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Human Summary
-          description: Plain-language summary for non-technical verifiers
-        agent_view:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Agent View
-          description: Compact machine-facing view derived from the same certificate
-        public_view:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Public View
-          description: Human-facing view metadata derived from the same certificate
-        contract_versions:
-          anyOf:
-          - additionalProperties:
-              type: string
-            type: object
-          - type: 'null'
-          title: Contract Versions
-          description: 'Surface version metadata for the contract this response participates in (issue #595). Optional + nullable so server can `exclude_none=True` from wire when omitted | preserves backwards-compat with strict (`extra=''forbid''`) SDK clients pinned to the pre-field schema.'
-      type: object
-      required:
-      - verified
-      - certificate_id
-      - media_hash_match
-      - chain_integrity
-      title: MediaVerifyResponse
-      description: Result of media verification.
-    MediaType:
-      type: string
-      enum:
-      - PHOTO
-      - VIDEO
-      - AUDIO
-      - DOCUMENT
-      title: MediaType
-      description: Supported media types for attestation.
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
     MediaAttestRequest:
       properties:
         agent_id:
@@ -666,6 +500,141 @@ components:
       - capture_timestamp_utc
       title: MediaAttestRequest
       description: Request to attest a media file's integrity via its hash.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    PQCAnchor:
+      properties:
+        block_index:
+          type: integer
+          minimum: -1.0
+          title: Block Index
+          description: 0-indexed block number of the most recent signed block; -1 if no block has been signed yet
+        block_ref:
+          type: string
+          minLength: 1
+          title: Block Ref
+          description: 'Human-readable reference to the anchoring block signature. Form: ''block:<N>:sig:<hex16>...:policy:<policy>'' or ''pending:<chain_length>/<BLOCK_SIZE>'' before the first block.'
+        anchor_lag:
+          type: integer
+          exclusiveMaximum: 100.0
+          minimum: 0.0
+          title: Anchor Lag
+          description: Number of records since the last signed block boundary. Always 0 <= anchor_lag < BLOCK_SIZE (=100).
+        next_block_at:
+          type: integer
+          title: Next Block At
+          description: chain_length at which the next block signature will fire
+        signature_policy:
+          type: string
+          title: Signature Policy
+          description: 'Most-recent anchor block''s signature policy: ''ml_dsa_only'' (api_key/free/l402 rails), ''dual_pq'' (x402/MPP on-chain rails), or ''pending'' (no block signed yet)'
+        algorithm:
+          type: string
+          title: Algorithm
+          description: Primary signature algorithm (ML-DSA-87 = FIPS 204)
+        standard:
+          type: string
+          title: Standard
+          description: Primary signature standard (FIPS 204)
+        slh_dsa_present:
+          type: boolean
+          title: Slh Dsa Present
+          description: True if the anchor block also carries an SLH-DSA-SHA2-256f signature (FIPS 205). Required for dual_pq rails.
+      type: object
+      required:
+      - block_index
+      - block_ref
+      - anchor_lag
+      - next_block_at
+      - signature_policy
+      - algorithm
+      - standard
+      - slh_dsa_present
+      title: PQCAnchor
+      description: "Cryptographic anchor binding an attestation to a PQC-signed block.\n\nPer spec.md §16.7, every attestation response carries an anchor that\nreferences the most recent COMPLETED PQC block. Consumers verify:\n\n  * Records 0..(block_index+1)*BLOCK_SIZE-1 are covered by the\n    ML-DSA-87 (and optionally SLH-DSA-SHA2-256f) signature at\n    block_index.\n  * The current attestation extends the chain anchor_lag records\n    beyond the last signed boundary; the next block signature will\n    fire when chain_length reaches next_block_at.\n  * Before the first block boundary (chain_length < BLOCK_SIZE),\n    block_index = -1 and signature_policy = \"pending\"; the anchor\n    object is still emitted so the response shape is stable.\n\nThis contract is load-bearing for external claim verification\n(DOE Genesis, CVP, LM SBIR, marketplace cert reviewers)."
+    MediaApprovalRequest:
+      properties:
+        decision:
+          type: string
+          title: Decision
+          description: approved or denied
+          default: approved
+        approver:
+          anyOf:
+          - type: string
+            maxLength: 256
+            minLength: 1
+          - type: 'null'
+          title: Approver
+        reason:
+          anyOf:
+          - type: string
+            maxLength: 1024
+          - type: 'null'
+          title: Reason
+        campaign_id:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Campaign Id
+        brand_client:
+          anyOf:
+          - type: string
+            maxLength: 256
+          - type: 'null'
+          title: Brand Client
+        permitted_use:
+          anyOf:
+          - type: string
+            maxLength: 512
+          - type: 'null'
+          title: Permitted Use
+        territory:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Territory
+        expiry:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Expiry
+        policy_id:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Policy Id
+      type: object
+      title: MediaApprovalRequest
+      description: Operator approval or denial for a media certificate.
     CaptureLocation:
       properties:
         latitude:
@@ -697,6 +666,104 @@ components:
       - longitude
       title: CaptureLocation
       description: GPS coordinates at time of capture.
+    MediaVerifyResponse:
+      properties:
+        verified:
+          type: boolean
+          title: Verified
+        certificate_id:
+          type: string
+          title: Certificate Id
+        certificate_found:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Certificate Found
+          description: True when a certificate record exists, independent of media byte/hash verification
+        media_hash_checked:
+          type: boolean
+          title: Media Hash Checked
+          description: True only when the caller supplied a media hash for byte-level verification
+          default: false
+        media_hash_match:
+          type: boolean
+          title: Media Hash Match
+        chain_integrity:
+          type: boolean
+          title: Chain Integrity
+        pqc_signature_valid:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Pqc Signature Valid
+        certificate:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Certificate
+          description: Full certificate details when a certificate exists; byte verification is represented by verified/media_hash_checked
+        reason:
+          type: string
+          title: Reason
+          description: Human-readable verification result
+          default: ''
+        layers:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Layers
+          description: Layered machine-readable media authority verdicts
+        machine_action:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Machine Action
+          description: Suggested machine action for agent workflows
+        human_verdict:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Human Verdict
+          description: Short human-facing verdict for certificate pages
+        human_summary:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Human Summary
+          description: Plain-language summary for non-technical verifiers
+        agent_view:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Agent View
+          description: Compact machine-facing view derived from the same certificate
+        public_view:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Public View
+          description: Human-facing view metadata derived from the same certificate
+        contract_versions:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Contract Versions
+          description: 'Surface version metadata for the contract this response participates in (issue #595). Optional + nullable so server can `exclude_none=True` from wire when omitted | preserves backwards-compat with strict (`extra=''forbid''`) SDK clients pinned to the pre-field schema.'
+      type: object
+      required:
+      - verified
+      - certificate_id
+      - media_hash_match
+      - chain_integrity
+      title: MediaVerifyResponse
+      description: Result of media verification.
     MediaAttestResponse:
       properties:
         attestation_id:
@@ -824,24 +891,6 @@ components:
       - app_version
       title: DeviceInfo
       description: Device metadata for provenance context.
-    MediaVerifyRequest:
-      properties:
-        media_hash:
-          type: string
-          title: Media Hash
-          description: SHA-256 hex digest to verify against certificate
-        certificate_id:
-          type: string
-          maxLength: 32
-          minLength: 1
-          title: Certificate Id
-          description: Certificate ID from attestation
-      type: object
-      required:
-      - media_hash
-      - certificate_id
-      title: MediaVerifyRequest
-      description: Verify a media file against a certificate.
     MediaRevokeRequest:
       properties:
         reason:
@@ -860,91 +909,42 @@ components:
       - reason
       title: MediaRevokeRequest
       description: Revoke a media certificate.
-    ValidationError:
+    MediaVerifyRequest:
       properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
+        media_hash:
           type: string
-          title: Message
-        type:
+          title: Media Hash
+          description: SHA-256 hex digest to verify against certificate
+        certificate_id:
           type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
+          maxLength: 32
+          minLength: 1
+          title: Certificate Id
+          description: Certificate ID from attestation
       type: object
       required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    MediaApprovalRequest:
+      - media_hash
+      - certificate_id
+      title: MediaVerifyRequest
+      description: Verify a media file against a certificate.
+    HTTPValidationError:
       properties:
-        decision:
-          type: string
-          title: Decision
-          description: approved or denied
-          default: approved
-        approver:
-          anyOf:
-          - type: string
-            maxLength: 256
-            minLength: 1
-          - type: 'null'
-          title: Approver
-        reason:
-          anyOf:
-          - type: string
-            maxLength: 1024
-          - type: 'null'
-          title: Reason
-        campaign_id:
-          anyOf:
-          - type: string
-            maxLength: 128
-          - type: 'null'
-          title: Campaign Id
-        brand_client:
-          anyOf:
-          - type: string
-            maxLength: 256
-          - type: 'null'
-          title: Brand Client
-        permitted_use:
-          anyOf:
-          - type: string
-            maxLength: 512
-          - type: 'null'
-          title: Permitted Use
-        territory:
-          anyOf:
-          - type: string
-            maxLength: 128
-          - type: 'null'
-          title: Territory
-        expiry:
-          anyOf:
-          - type: string
-            maxLength: 64
-          - type: 'null'
-          title: Expiry
-        policy_id:
-          anyOf:
-          - type: string
-            maxLength: 128
-          - type: 'null'
-          title: Policy Id
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
       type: object
-      title: MediaApprovalRequest
-      description: Operator approval or denial for a media certificate.
+      title: HTTPValidationError
+    MediaType:
+      type: string
+      enum:
+      - PHOTO
+      - VIDEO
+      - AUDIO
+      - DOCUMENT
+      title: MediaType
+      description: Supported media types for attestation.
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
