@@ -1,0 +1,12 @@
+{
+ "url": "https://governance.taskhawktech.com/openapi.json",
+ "requested_url": "https://governance.taskhawktech.com/openapi.json",
+ "status": 200,
+ "content_type": "application/json",
+ "bytes": 75404,
+ "sha256": "a809cbd355ae37623ef4fdc76dce7a1002b874d619e892203a7e2ed840b2aed3",
+ "fetched_at": "2026-10-04",
+ "fetched_by": "APIEvangelist-Harvest/1.0 (+https://apievangelist.com)",
+ "match": "byte-identical",
+ "note": "Re-fetched from the provider by verify-openapi-sources.py; the archived file is byte-identical to what the provider serves."
+}
