@@ -125,3 +125,39 @@ retired:
   note: 'https://governance.taskhawktech.com/pricing: "Hosted recurring checkout tiers and prepaid credit packs
     are retired." The PyPI kevros README (Scout $29 / Sentinel $149 / Sovereign $499) and the agent card pricing.subscriptions
     (starter $29 / professional $149 / enterprise $499) still advertise them — stale.'
+x-canonical:
+  generated: '2026-10-08'
+  vocabulary: all/0-working/economics/plans-canonical.yml
+  models:
+  - free
+  - subscription
+  units: []
+  plans:
+  - name: Trial allowance (API key)
+    access: other
+    model: free
+    model_how: derived
+    units: []
+    periods:
+    - month
+  - name: Per-call machine payment rails
+    access: other
+    model: unstated
+    model_how: derived
+    units: []
+    periods:
+    - other
+  - name: Action-boundary readiness review (TaskHawk Connect)
+    access: other
+    model: subscription
+    model_how: derived
+    units: []
+    periods:
+    - one-time
+  - name: Production / pilot (marketplace or direct agreement)
+    access: other
+    model: unstated
+    model_how: derived
+    units: []
+    periods:
+    - term
