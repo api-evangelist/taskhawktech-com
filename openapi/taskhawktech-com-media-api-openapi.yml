@@ -500,6 +500,24 @@ components:
       - capture_timestamp_utc
       title: MediaAttestRequest
       description: Request to attest a media file's integrity via its hash.
+    MediaRevokeRequest:
+      properties:
+        reason:
+          type: string
+          maxLength: 1024
+          minLength: 1
+          title: Reason
+        revoked_by:
+          anyOf:
+          - type: string
+            maxLength: 256
+          - type: 'null'
+          title: Revoked By
+      type: object
+      required:
+      - reason
+      title: MediaRevokeRequest
+      description: Revoke a media certificate.
     ValidationError:
       properties:
         loc:
@@ -526,56 +544,24 @@ components:
       - msg
       - type
       title: ValidationError
-    PQCAnchor:
+    MediaVerifyRequest:
       properties:
-        block_index:
-          type: integer
-          minimum: -1.0
-          title: Block Index
-          description: 0-indexed block number of the most recent signed block; -1 if no block has been signed yet
-        block_ref:
+        media_hash:
           type: string
+          title: Media Hash
+          description: SHA-256 hex digest to verify against certificate
+        certificate_id:
+          type: string
+          maxLength: 32
           minLength: 1
-          title: Block Ref
-          description: 'Human-readable reference to the anchoring block signature. Form: ''block:<N>:sig:<hex16>...:policy:<policy>'' or ''pending:<chain_length>/<BLOCK_SIZE>'' before the first block.'
-        anchor_lag:
-          type: integer
-          exclusiveMaximum: 100.0
-          minimum: 0.0
-          title: Anchor Lag
-          description: Number of records since the last signed block boundary. Always 0 <= anchor_lag < BLOCK_SIZE (=100).
-        next_block_at:
-          type: integer
-          title: Next Block At
-          description: chain_length at which the next block signature will fire
-        signature_policy:
-          type: string
-          title: Signature Policy
-          description: 'Most-recent anchor block''s signature policy: ''ml_dsa_only'' (api_key/free/l402 rails), ''dual_pq'' (x402/MPP on-chain rails), or ''pending'' (no block signed yet)'
-        algorithm:
-          type: string
-          title: Algorithm
-          description: Primary signature algorithm (ML-DSA-87 = FIPS 204)
-        standard:
-          type: string
-          title: Standard
-          description: Primary signature standard (FIPS 204)
-        slh_dsa_present:
-          type: boolean
-          title: Slh Dsa Present
-          description: True if the anchor block also carries an SLH-DSA-SHA2-256f signature (FIPS 205). Required for dual_pq rails.
+          title: Certificate Id
+          description: Certificate ID from attestation
       type: object
       required:
-      - block_index
-      - block_ref
-      - anchor_lag
-      - next_block_at
-      - signature_policy
-      - algorithm
-      - standard
-      - slh_dsa_present
-      title: PQCAnchor
-      description: "Cryptographic anchor binding an attestation to a PQC-signed block.\n\nPer spec.md §16.7, every attestation response carries an anchor that\nreferences the most recent COMPLETED PQC block. Consumers verify:\n\n  * Records 0..(block_index+1)*BLOCK_SIZE-1 are covered by the\n    ML-DSA-87 (and optionally SLH-DSA-SHA2-256f) signature at\n    block_index.\n  * The current attestation extends the chain anchor_lag records\n    beyond the last signed boundary; the next block signature will\n    fire when chain_length reaches next_block_at.\n  * Before the first block boundary (chain_length < BLOCK_SIZE),\n    block_index = -1 and signature_policy = \"pending\"; the anchor\n    object is still emitted so the response shape is stable.\n\nThis contract is load-bearing for external claim verification\n(DOE Genesis, CVP, LM SBIR, marketplace cert reviewers)."
+      - media_hash
+      - certificate_id
+      title: MediaVerifyRequest
+      description: Verify a media file against a certificate.
     MediaApprovalRequest:
       properties:
         decision:
@@ -635,6 +621,65 @@ components:
       type: object
       title: MediaApprovalRequest
       description: Operator approval or denial for a media certificate.
+    MediaType:
+      type: string
+      enum:
+      - PHOTO
+      - VIDEO
+      - AUDIO
+      - DOCUMENT
+      title: MediaType
+      description: Supported media types for attestation.
+    PQCAnchor:
+      properties:
+        block_index:
+          type: integer
+          minimum: -1.0
+          title: Block Index
+          description: 0-indexed block number of the most recent signed block; -1 if no block has been signed yet
+        block_ref:
+          type: string
+          minLength: 1
+          title: Block Ref
+          description: 'Human-readable reference to the anchoring block signature. Form: ''block:<N>:sig:<hex16>...:policy:<policy>'' or ''pending:<chain_length>/<BLOCK_SIZE>'' before the first block.'
+        anchor_lag:
+          type: integer
+          exclusiveMaximum: 100.0
+          minimum: 0.0
+          title: Anchor Lag
+          description: Number of records since the last signed block boundary. Always 0 <= anchor_lag < BLOCK_SIZE (=100).
+        next_block_at:
+          type: integer
+          title: Next Block At
+          description: chain_length at which the next block signature will fire
+        signature_policy:
+          type: string
+          title: Signature Policy
+          description: 'Most-recent anchor block''s signature policy: ''ml_dsa_only'' (api_key/free/l402 rails), ''dual_pq'' (x402/MPP on-chain rails), or ''pending'' (no block signed yet)'
+        algorithm:
+          type: string
+          title: Algorithm
+          description: Primary signature algorithm (ML-DSA-87 = FIPS 204)
+        standard:
+          type: string
+          title: Standard
+          description: Primary signature standard (FIPS 204)
+        slh_dsa_present:
+          type: boolean
+          title: Slh Dsa Present
+          description: True if the anchor block also carries an SLH-DSA-SHA2-256f signature (FIPS 205). Required for dual_pq rails.
+      type: object
+      required:
+      - block_index
+      - block_ref
+      - anchor_lag
+      - next_block_at
+      - signature_policy
+      - algorithm
+      - standard
+      - slh_dsa_present
+      title: PQCAnchor
+      description: "Cryptographic anchor binding an attestation to a PQC-signed block.\n\nPer spec.md §16.7, every attestation response carries an anchor that\nreferences the most recent COMPLETED PQC block. Consumers verify:\n\n  * Records 0..(block_index+1)*BLOCK_SIZE-1 are covered by the\n    ML-DSA-87 (and optionally SLH-DSA-SHA2-256f) signature at\n    block_index.\n  * The current attestation extends the chain anchor_lag records\n    beyond the last signed boundary; the next block signature will\n    fire when chain_length reaches next_block_at.\n  * Before the first block boundary (chain_length < BLOCK_SIZE),\n    block_index = -1 and signature_policy = \"pending\"; the anchor\n    object is still emitted so the response shape is stable.\n\nThis contract is load-bearing for external claim verification\n(DOE Genesis, CVP, LM SBIR, marketplace cert reviewers)."
     CaptureLocation:
       properties:
         latitude:
@@ -666,6 +711,108 @@ components:
       - longitude
       title: CaptureLocation
       description: GPS coordinates at time of capture.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    MediaAttestResponse:
+      properties:
+        attestation_id:
+          type: string
+          title: Attestation Id
+        media_hash:
+          type: string
+          title: Media Hash
+        media_type:
+          type: string
+          title: Media Type
+        epoch:
+          type: integer
+          title: Epoch
+        hash_prev:
+          type: string
+          title: Hash Prev
+        hash_curr:
+          type: string
+          title: Hash Curr
+        pqc_block_ref:
+          type: string
+          minLength: 1
+          title: Pqc Block Ref
+          description: Post-quantum signature anchor reference. Always populated. See AttestResponse.pqc_block_ref / spec.md §16.7.
+        pqc_anchor:
+          $ref: '#/components/schemas/PQCAnchor'
+          description: Rich PQC anchor metadata. See spec.md §16.7.
+        certificate_id:
+          type: string
+          title: Certificate Id
+          description: Short ID for verification URLs
+        verification_url:
+          type: string
+          title: Verification Url
+        device_verified:
+          type: boolean
+          title: Device Verified
+          description: True if App Attest assertion was validated
+          default: false
+        chain_length:
+          type: integer
+          title: Chain Length
+        timestamp_utc:
+          type: string
+          title: Timestamp Utc
+        frame_count:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Frame Count
+          description: Number of per-frame hashes recorded
+        frame_root_hash:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Frame Root Hash
+          description: Merkle root of per-frame hashes
+        contract_versions:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Contract Versions
+          description: 'Surface version metadata for the contract this response participates in (issue #595). Optional + nullable so server can `exclude_none=True` from wire when omitted | preserves backwards-compat with strict (`extra=''forbid''`) SDK clients pinned to the pre-field schema.'
+      type: object
+      required:
+      - attestation_id
+      - media_hash
+      - media_type
+      - epoch
+      - hash_prev
+      - hash_curr
+      - pqc_block_ref
+      - pqc_anchor
+      - certificate_id
+      - verification_url
+      - chain_length
+      - timestamp_utc
+      title: MediaAttestResponse
+      description: 'PQC-signed media attestation certificate.
+
+
+        Carries the same PQC anchor contract as AttestResponse (spec.md §16.7):
+
+        ``pqc_block_ref`` is always non-empty; ``pqc_anchor`` is the rich
+
+        metadata for verifier consumption. Pre-2026-05-11 the field was
+
+        Optional and the router used response_model_exclude_none=True, so
+
+        the field disappeared from JSON on inter-block calls.'
     MediaVerifyResponse:
       properties:
         verified:
@@ -764,99 +911,6 @@ components:
       - chain_integrity
       title: MediaVerifyResponse
       description: Result of media verification.
-    MediaAttestResponse:
-      properties:
-        attestation_id:
-          type: string
-          title: Attestation Id
-        media_hash:
-          type: string
-          title: Media Hash
-        media_type:
-          type: string
-          title: Media Type
-        epoch:
-          type: integer
-          title: Epoch
-        hash_prev:
-          type: string
-          title: Hash Prev
-        hash_curr:
-          type: string
-          title: Hash Curr
-        pqc_block_ref:
-          type: string
-          minLength: 1
-          title: Pqc Block Ref
-          description: Post-quantum signature anchor reference. Always populated. See AttestResponse.pqc_block_ref / spec.md §16.7.
-        pqc_anchor:
-          $ref: '#/components/schemas/PQCAnchor'
-          description: Rich PQC anchor metadata. See spec.md §16.7.
-        certificate_id:
-          type: string
-          title: Certificate Id
-          description: Short ID for verification URLs
-        verification_url:
-          type: string
-          title: Verification Url
-        device_verified:
-          type: boolean
-          title: Device Verified
-          description: True if App Attest assertion was validated
-          default: false
-        chain_length:
-          type: integer
-          title: Chain Length
-        timestamp_utc:
-          type: string
-          title: Timestamp Utc
-        frame_count:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Frame Count
-          description: Number of per-frame hashes recorded
-        frame_root_hash:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Frame Root Hash
-          description: Merkle root of per-frame hashes
-        contract_versions:
-          anyOf:
-          - additionalProperties:
-              type: string
-            type: object
-          - type: 'null'
-          title: Contract Versions
-          description: 'Surface version metadata for the contract this response participates in (issue #595). Optional + nullable so server can `exclude_none=True` from wire when omitted | preserves backwards-compat with strict (`extra=''forbid''`) SDK clients pinned to the pre-field schema.'
-      type: object
-      required:
-      - attestation_id
-      - media_hash
-      - media_type
-      - epoch
-      - hash_prev
-      - hash_curr
-      - pqc_block_ref
-      - pqc_anchor
-      - certificate_id
-      - verification_url
-      - chain_length
-      - timestamp_utc
-      title: MediaAttestResponse
-      description: 'PQC-signed media attestation certificate.
-
-
-        Carries the same PQC anchor contract as AttestResponse (spec.md §16.7):
-
-        ``pqc_block_ref`` is always non-empty; ``pqc_anchor`` is the rich
-
-        metadata for verifier consumption. Pre-2026-05-11 the field was
-
-        Optional and the router used response_model_exclude_none=True, so
-
-        the field disappeared from JSON on inter-block calls.'
     DeviceInfo:
       properties:
         model:
@@ -891,60 +945,6 @@ components:
       - app_version
       title: DeviceInfo
       description: Device metadata for provenance context.
-    MediaRevokeRequest:
-      properties:
-        reason:
-          type: string
-          maxLength: 1024
-          minLength: 1
-          title: Reason
-        revoked_by:
-          anyOf:
-          - type: string
-            maxLength: 256
-          - type: 'null'
-          title: Revoked By
-      type: object
-      required:
-      - reason
-      title: MediaRevokeRequest
-      description: Revoke a media certificate.
-    MediaVerifyRequest:
-      properties:
-        media_hash:
-          type: string
-          title: Media Hash
-          description: SHA-256 hex digest to verify against certificate
-        certificate_id:
-          type: string
-          maxLength: 32
-          minLength: 1
-          title: Certificate Id
-          description: Certificate ID from attestation
-      type: object
-      required:
-      - media_hash
-      - certificate_id
-      title: MediaVerifyRequest
-      description: Verify a media file against a certificate.
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    MediaType:
-      type: string
-      enum:
-      - PHOTO
-      - VIDEO
-      - AUDIO
-      - DOCUMENT
-      title: MediaType
-      description: Supported media types for attestation.
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
