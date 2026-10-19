@@ -28,7 +28,6 @@ tags:
 - Compliance
 - Prompt Injection Detection
 - Media Attestation
-- Post-Quantum Cryptography
 - Formal Verification
 - x402
 - L402
@@ -47,7 +46,6 @@ tags_raw:
 - Compliance
 - Prompt Injection Detection
 - Media Attestation
-- Post-Quantum Cryptography
 - Formal Verification
 - x402
 - L402
@@ -424,3 +422,5 @@ x-a2a:
   grade: "near-conformant"
   protocol_version: "0.2.6"
   control: 404
+x-tags-removed:
+- Post-Quantum Cryptography
