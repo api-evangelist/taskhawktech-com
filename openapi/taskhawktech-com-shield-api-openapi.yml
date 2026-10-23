@@ -230,3 +230,9 @@ x-service-info:
     homepage: https://governance.taskhawktech.com
     apiReference: https://governance.taskhawktech.com/openapi.json
     llms: https://governance.taskhawktech.com/for-agents.txt
+x-provenance:
+  method: harvested
+  publisher: TaskHawk Systems
+  source: https://governance.taskhawktech.com/openapi.json
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)
