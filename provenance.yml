@@ -30,7 +30,13 @@ artifacts:
   front-door-ai/2026-09-17.yml:
     method: unknown
     evidence: no authorship recorded
-  kin/checks-2026-09-24T161608.yml:
+  integrations/_index.yml:
+    method: generated
+    evidence: carries an API Evangelist house phrase
+  integrations/taskhawktech-com-integration-edges.yml:
+    method: searched
+    evidence: declared in the artifact
+  kin/checks-2026-10-11T110117.yml:
     method: generated
     evidence: Kin Score snapshot written by score.rb
   kin/score-2026-09-19T193153.yml:
@@ -63,6 +69,21 @@ artifacts:
   kin/score-2026-09-24T161608.yml:
     method: generated
     evidence: Kin Score snapshot written by score.rb
+  kin/score-2026-09-25T210408.yml:
+    method: generated
+    evidence: Kin Score snapshot written by score.rb
+  kin/score-2026-09-25T232841.yml:
+    method: generated
+    evidence: Kin Score snapshot written by score.rb
+  kin/score-2026-10-03T000835.yml:
+    method: generated
+    evidence: Kin Score snapshot written by score.rb
+  kin/score-2026-10-03T024842.yml:
+    method: generated
+    evidence: Kin Score snapshot written by score.rb
+  kin/score-2026-10-11T110117.yml:
+    method: generated
+    evidence: Kin Score snapshot written by score.rb
   lifecycle/taskhawktech-com-lifecycle.yml:
     method: searched
     evidence: declared in the artifact
@@ -86,12 +107,43 @@ artifacts:
     evidence: declared in the artifact
   openapi/_original/taskhawktech-com-openapi.json:
     method: harvested
-    evidence: found in openapi/_original/; the fetch URL and bytes were not recorded, so byte-identity
-      to the provider's source is unverified
-  openapi/taskhawktech-com-openapi.yml:
+    evidence: byte-identical to https://governance.taskhawktech.com/openapi.json (sha256 a809cbd355ae,
+      fetched 2026-10-04)
+  openapi/_original/taskhawktech-com-openapi.yml:
+    method: harvested
+    evidence: the same operations as https://governance.taskhawktech.com/openapi.json (sha256 a809cbd355ae,
+      fetched 2026-10-04)
+  openapi/taskhawktech-com-billing-api-openapi.yml:
     method: derived
     evidence: paths are a subset of openapi/_original/ (split from the harvested spec)
+  openapi/taskhawktech-com-governance-api-openapi.yml:
+    method: derived
+    evidence: paths are a subset of openapi/_original/ (split from the harvested spec)
+  openapi/taskhawktech-com-media-api-openapi.yml:
+    method: derived
+    evidence: paths are a subset of openapi/_original/ (split from the harvested spec)
+  openapi/taskhawktech-com-shield-api-openapi.yml:
+    method: derived
+    evidence: paths are a subset of openapi/_original/ (split from the harvested spec)
+  openapi/taskhawktech-com-signup-api-openapi.yml:
+    method: derived
+    evidence: paths are a subset of openapi/_original/ (split from the harvested spec)
+  overlays/taskhawktech-com-billing-api-phrasing-overlay.yaml:
+    method: generated
+    evidence: declared in the artifact
+  overlays/taskhawktech-com-governance-api-phrasing-overlay.yaml:
+    method: generated
+    evidence: declared in the artifact
+  overlays/taskhawktech-com-media-api-phrasing-overlay.yaml:
+    method: generated
+    evidence: declared in the artifact
   overlays/taskhawktech-com-openapi-overlay.yaml:
+    method: derived
+    evidence: an API Evangelist overlay (title) over the provider's contract
+  overlays/taskhawktech-com-shield-api-phrasing-overlay.yaml:
+    method: generated
+    evidence: declared in the artifact
+  overlays/taskhawktech-com-signup-api-phrasing-overlay.yaml:
     method: generated
     evidence: declared in the artifact
   packages/taskhawktech-com-packages.yml:
